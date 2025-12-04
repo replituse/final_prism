@@ -1,0 +1,305 @@
+Project: PRISM – Post-Production Management System
+Strict Rules:
+
+❌ Do NOT change dashboard design, layout, widgets, or structure
+
+✅ Improve UI colors, spacing, icons, and text only for forms & pages (not dashboard)
+
+✅ Use existing database
+
+✅ Do NOT break any existing modules
+
+✅ Fix only logic, workflows, UI polish & demo data
+
+✅ 1. BOOKING MUST OPEN IN FULL EDIT MODE WITH FILLED DATA
+❌ Current Problem:
+
+When clicking a booking → form opens empty or partially filled
+
+✅ Required Fix:
+
+When user clicks any existing booking, the Edit Booking modal must open with:
+
+✅ All fields auto-filled:
+
+Room
+
+Customer
+
+Project
+
+Contact Person
+
+Editor
+
+Date
+
+From Time
+
+To Time
+
+Actual From
+
+Actual To
+
+Break Hours
+
+Status
+
+✅ No manual re-selection should be required
+✅ Data must be fetched from DB using booking ID
+✅ Prevent accidental overwriting of empty values
+
+✅ 2. BILLING & CHALAN SYSTEM – FULLY FIXED & AUTOMATED
+❌ Current Problem:
+
+Chalan is not generating
+
+Billing logic is broken
+
+Time & hour calculation is incorrect
+
+✅ Required Workflow Fix:
+✅ A) BILLING CALCULATION LOGIC
+
+Automatically calculate:
+
+Total Booking Time = To Time – From Time  
+Total Actual Time = Actual To – Actual From  
+Final Billable Time = Total Actual Time – Break Hours  
+
+
+✅ Show final billable hours live in booking form
+✅ Store calculation in DB
+
+✅ B) AUTO CHALAN GENERATION RULE
+
+✅ When:
+
+Status = Completed OR
+
+Actual To time is entered
+
+➡️ System must:
+
+Automatically allow Chalan generation
+
+OR show Generate Chalan button
+
+✅ Chalan must contain:
+
+Customer
+
+Project
+
+Booking Date
+
+From–To
+
+Actual From–To
+
+Break
+
+Final Billable Hours
+
+Charges (if rate exists)
+
+✅ Prevent duplicate chalans for same booking
+✅ After chalan created → Show status “Chalan Generated” on booking
+
+✅ 3. UI IMPROVEMENT (EXCEPT DASHBOARD)
+
+✅ Improve only:
+
+Booking forms
+
+Master forms
+
+Report filters
+
+Chalan forms
+
+✅ UI Rules:
+
+✅ Light attractive color palette
+
+✅ Soft blue headers
+
+✅ Light grey background
+
+✅ Soft green success
+
+✅ Soft red cancel
+
+✅ Big section headings
+
+✅ Proper spacing & padding
+
+✅ Input icons inside fields
+
+✅ Proper text alignment
+
+❌ No change to:
+
+Dashboard layout
+
+Dashboard charts
+
+Dashboard cards
+
+✅ 4. ADD 10–15 DEMO DATA (DECEMBER 2025)
+✅ Insert demo data for:
+
+✅ Customers
+
+✅ Projects
+
+✅ Rooms
+
+✅ Editors
+
+✅ Bookings
+
+✅ Chalans
+
+✅ Reports
+
+✅ Data Rules:
+
+Use 2–3 days gap
+
+Only in December 2025
+
+Include:
+
+Confirmed bookings
+
+Completed bookings
+
+Cancelled bookings
+
+Chalan generated bookings
+
+✅ Data must reflect in:
+
+Calendar
+
+Booking Report
+
+Editor Report
+
+Conflict Report
+
+Chalan Report
+
+✅ 5. IGNORE CONFLICT LOGIC – FULL SYSTEM FIX
+✅ Must Work For:
+
+✅ Room Master
+✅ Editor Master
+✅ Booking Form
+✅ Repeat Booking
+✅ Bulk Booking
+
+✅ Logic Must Be:
+
+If Ignore Conflict = ON for:
+
+Room OR
+
+Editor
+➡️ Allow duplicate booking without blocking
+
+If Ignore Conflict = OFF:
+➡️ Block duplicate booking
+➡️ Show conflict alert before save
+
+✅ Conflict must consider:
+
+Date
+
+Time
+
+Room
+
+Editor
+
+✅ Conflict must reflect properly in Conflict Report
+
+✅ 6. ALIGNMENT, ICONS & TEXT SIZE IMPROVEMENTS
+
+✅ Add:
+
+Input field icons
+
+Calendar icons
+
+Clock icons
+
+Dropdown arrows
+
+✅ Fix:
+
+Label alignment
+
+Field spacing
+
+Button alignment
+
+✅ Increase:
+
+Heading font size
+
+Section title size
+
+Tab label visibility
+
+✅ Keep:
+
+Existing layout structure
+
+Same form grouping
+
+✅ 7. PROPER WORKFLOW & GOOD LOOK GUARANTEE
+
+Ensure:
+
+✅ Booking → Auto reflected in:
+
+Reports
+
+Chalan
+
+Editor Report
+
+Conflict Report
+
+✅ Chalan → Linked to correct booking
+✅ Editing Booking → Updates reports & chalan
+✅ Cancel Booking → Shows cancelled in reports
+✅ No broken navigation
+✅ No dead buttons
+✅ No blank exports
+✅ Smooth transitions
+✅ Consistent professional UI across all forms
+
+✅ FINAL DELIVERY EXPECTATION
+
+After implementation:
+
+✅ Booking opens in edit mode with filled data
+✅ Billing auto calculates correctly
+✅ Chalan generates correctly
+✅ Demo data visible everywhere
+✅ Ignore conflict works perfectly
+✅ UI looks modern, aligned & attractive
+✅ Dashboard untouched
+✅ Proper end-to-end workflow maintained
+
+✅ IF NEEDED, ALSO DO:
+
+✅ Improve validation messages
+✅ Toast notifications
+✅ Loading spinners
+✅ API error handling
+✅ Prevent double-click duplicate submissions
