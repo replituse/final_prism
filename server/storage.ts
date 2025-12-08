@@ -803,6 +803,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateChalan(id: number, chalanData: Partial<InsertChalan>, items?: InsertChalanItem[]): Promise<Chalan | undefined> {
+    // Check if chalan is cancelled - cancelled chalans are read-only
+    const existing = await this.getChalan(id);
+    if (!existing) return undefined;
+    if (existing.isCancelled) return undefined; // Cancelled chalans cannot be updated
+    
     // Update the chalan basic info (but preserve chalanNumber and createdAt)
     const updateData: any = {};
     if (chalanData.customerId !== undefined) updateData.customerId = chalanData.customerId;

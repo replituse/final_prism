@@ -74,11 +74,38 @@ export function DataTable<T extends Record<string, any>>({
       setSortColumn(columnKey);
       setSortDirection("asc");
     }
+    setPage(1); // Reset pagination on sort
+  };
+
+  // Helper to extract searchable text from values (handles nested objects)
+  const getSearchableValue = (value: any): string => {
+    if (value === null || value === undefined) return "";
+    if (typeof value === "object") {
+      // Handle common nested object patterns: customer, project, room, editor, etc.
+      const searchableFields = [
+        "name",           // customer.name, project.name, room.name, editor.name
+        "chalanNumber",   // chalan number
+        "description",    // project.description, item descriptions
+        "email",          // customer.email
+        "type",           // room.type, editor.type
+        "projectType",    // project type
+        "notes",          // booking/chalan notes
+      ];
+      const matches: string[] = [];
+      for (const field of searchableFields) {
+        if (field in value && value[field]) {
+          matches.push(String(value[field]));
+        }
+      }
+      return matches.join(" ");
+    }
+    if (typeof value === "boolean") return value ? "yes" : "no";
+    return String(value);
   };
 
   const filteredData = data.filter((row) =>
     Object.values(row).some((value) =>
-      String(value).toLowerCase().includes(search.toLowerCase())
+      getSearchableValue(value).toLowerCase().includes(search.toLowerCase())
     )
   );
 

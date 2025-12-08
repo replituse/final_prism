@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format, startOfMonth, endOfMonth } from "date-fns";
-import { FileSpreadsheet, Download, Eye } from "lucide-react";
+import { FileSpreadsheet, Download, Eye, Pencil, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,9 +24,11 @@ import { Header } from "@/components/header";
 import { DataTable, Column } from "@/components/data-table";
 import { EmptyState } from "@/components/empty-state";
 import { ChalanInvoice } from "@/components/chalan-invoice";
+import { useLocation } from "wouter";
 import type { ChalanWithItems, Customer } from "@shared/schema";
 
 export default function ChalanReportPage() {
+  const [, navigate] = useLocation();
   const [fromDate, setFromDate] = useState(format(startOfMonth(new Date()), "yyyy-MM-dd"));
   const [toDate, setToDate] = useState(format(endOfMonth(new Date()), "yyyy-MM-dd"));
   const [selectedCustomer, setSelectedCustomer] = useState<string>("all");
@@ -79,6 +81,11 @@ export default function ChalanReportPage() {
     setTimeout(() => window.print(), 100);
   };
 
+  const handleEditChalan = (chalan: ChalanWithItems) => {
+    // Navigate to chalan management page with edit mode
+    navigate(`/chalan?edit=${chalan.id}`);
+  };
+
   const totalAmount = filteredChalans.reduce((sum, c) => sum + (c.totalAmount || 0), 0);
   const cancelledCount = chalans.filter((c) => c.isCancelled).length;
 
@@ -123,9 +130,17 @@ export default function ChalanReportPage() {
       key: "isCancelled",
       header: "Status",
       cell: (row) => (
-        <Badge variant={row.isCancelled ? "destructive" : "default"}>
-          {row.isCancelled ? "Cancelled" : "Active"}
-        </Badge>
+        <div className="flex items-center gap-1">
+          <Badge variant={row.isCancelled ? "destructive" : "default"}>
+            {row.isCancelled ? "Cancelled" : "Active"}
+          </Badge>
+          {row.isCancelled && (
+            <Badge variant="outline" className="text-[10px] px-1 py-0 gap-0.5">
+              <Lock className="h-2.5 w-2.5" />
+              View Only
+            </Badge>
+          )}
+        </div>
       ),
     },
   ];
@@ -264,6 +279,16 @@ export default function ChalanReportPage() {
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
+                    {!row.isCancelled && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEditChalan(row)}
+                        data-testid={`button-edit-chalan-${row.id}`}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="icon"

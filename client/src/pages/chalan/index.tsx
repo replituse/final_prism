@@ -102,13 +102,38 @@ export default function ChalanPage() {
   });
 
   useEffect(() => {
-    if (urlParamsProcessed || customers.length === 0) return;
+    if (urlParamsProcessed) return;
     
     const params = new URLSearchParams(searchString);
     const customerId = params.get("customerId");
     const projectId = params.get("projectId");
+    const editId = params.get("edit");
     
-    if (customerId) {
+    // Handle edit mode from URL (e.g., /chalan?edit=123)
+    if (editId && chalans.length > 0) {
+      const chalanToEdit = chalans.find(c => c.id === parseInt(editId));
+      if (chalanToEdit && !chalanToEdit.isCancelled) {
+        setEditingChalan(chalanToEdit);
+        form.reset({
+          customerId: chalanToEdit.customerId.toString(),
+          projectId: chalanToEdit.projectId.toString(),
+          chalanDate: chalanToEdit.chalanDate,
+          notes: chalanToEdit.notes || "",
+          items: chalanToEdit.items?.length ? chalanToEdit.items.map(item => ({
+            description: item.description,
+            quantity: item.quantity.toString(),
+            rate: item.rate.toString(),
+          })) : [{ description: "", quantity: "1", rate: "0" }],
+        });
+        setDialogOpen(true);
+        setUrlParamsProcessed(true);
+        setLocation("/chalan", { replace: true });
+      }
+      return;
+    }
+    
+    // Handle create mode from URL with pre-filled customer/project
+    if (customerId && customers.length > 0) {
       form.setValue("customerId", customerId);
       setDialogOpen(true);
       setUrlParamsProcessed(true);
@@ -120,7 +145,7 @@ export default function ChalanPage() {
         }, 100);
       }
     }
-  }, [searchString, customers, urlParamsProcessed, form, setLocation]);
+  }, [searchString, customers, chalans, urlParamsProcessed, form, setLocation]);
 
   const createMutation = useMutation({
     mutationFn: async (data: ChalanFormValues) => {

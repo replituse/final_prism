@@ -1,4 +1,4 @@
-import { Clock, User, Building, MoreVertical, X, FileText, FilePlus, Eye } from "lucide-react";
+import { Clock, User, Building, MoreVertical, X, FileText, FilePlus, Eye, Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -72,9 +72,18 @@ export function BookingCard({
           data-testid={`booking-card-${booking.id}`}
         >
           {!isEditable && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-              <div className="w-full h-0.5 bg-destructive/70 transform -rotate-12" />
-            </div>
+            <>
+              <div className="absolute inset-0 bg-booking-cancelled/20 pointer-events-none z-10 rounded-md" />
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                <div className="w-full h-0.5 bg-booking-cancelled transform -rotate-12" />
+              </div>
+              <div className="absolute top-0 right-0 left-0 flex items-center justify-center pointer-events-none z-20">
+                <Badge className="text-[10px] px-1.5 py-0 gap-1 rounded-b-md rounded-t-none bg-booking-cancelled text-white">
+                  <Lock className="h-2.5 w-2.5" />
+                  View Only
+                </Badge>
+              </div>
+            </>
           )}
           <div className="flex items-start justify-between gap-1">
             <div className="flex-1 min-w-0 overflow-hidden">
@@ -91,21 +100,20 @@ export function BookingCard({
               )}
             </div>
             
-            {/* Always show 3-dot menu - never hidden */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 shrink-0 flex-shrink-0"
-                  onClick={(e) => e.stopPropagation()}
-                  data-testid={`booking-menu-${booking.id}`}
-                  disabled={!isEditable}
-                >
-                  <MoreVertical className="h-3 w-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              {isEditable && (
+            {/* Menu only for editable bookings, non-focusable placeholder for cancelled */}
+            {isEditable ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 shrink-0 flex-shrink-0"
+                    onClick={(e) => e.stopPropagation()}
+                    data-testid={`booking-menu-${booking.id}`}
+                  >
+                    <MoreVertical className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem 
                     onClick={(e) => {
@@ -160,8 +168,15 @@ export function BookingCard({
                     Cancel Booking
                   </DropdownMenuItem>
                 </DropdownMenuContent>
-              )}
-            </DropdownMenu>
+              </DropdownMenu>
+            ) : (
+              <div 
+                className="h-6 w-6 shrink-0 flex-shrink-0 flex items-center justify-center opacity-30"
+                aria-hidden="true"
+              >
+                <MoreVertical className="h-3 w-3" />
+              </div>
+            )}
           </div>
 
           <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
