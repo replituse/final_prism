@@ -7,7 +7,7 @@ interface AuthContextType {
   selectedDate: Date;
   isAuthenticated: boolean;
   login: (user: User, company: Company | null) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   setSelectedDate: (date: Date) => void;
   setCompany: (company: Company | null) => void;
 }
@@ -36,7 +36,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    // Call server to destroy session
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch {
+      // Continue with local logout even if server call fails
+    }
     setUser(null);
     setCompanyState(null);
     localStorage.removeItem("prism_user");

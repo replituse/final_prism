@@ -1,10 +1,80 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import type { Server } from "http";
 import { storage } from "./storage";
 import { insertCustomerSchema, insertProjectSchema, insertRoomSchema, insertEditorSchema, insertBookingSchema, insertEditorLeaveSchema, insertChalanSchema, insertChalanItemSchema, insertUserSchema, loginSchema } from "@shared/schema";
 import { z } from "zod";
 
+type UserRole = "admin" | "gst" | "non_gst";
+
+interface AuthenticatedRequest extends Request {
+  userId?: number;
+  userRole?: UserRole;
+}
+
+async function authMiddleware(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  // Use session-based authentication
+  const userId = req.session?.userId;
+  const userRole = req.session?.userRole;
+  
+  if (userId && userRole) {
+    // Verify user still exists and is active
+    try {
+      const user = await storage.getUser(userId);
+      if (user && user.isActive) {
+        req.userId = user.id;
+        req.userRole = user.role as UserRole;
+      } else {
+        // User no longer valid, clear session
+        req.session.destroy(() => {});
+      }
+    } catch (error) {
+      // Silent fail - no auth
+    }
+  }
+  next();
+}
+
+function requireAuth(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  if (!req.userId || !req.userRole) {
+    return res.status(401).json({ message: "Authentication required" });
+  }
+  next();
+}
+
+function requireRole(...allowedRoles: UserRole[]) {
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    if (!req.userRole) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    if (!allowedRoles.includes(req.userRole)) {
+      return res.status(403).json({ message: "You don't have permission to perform this action" });
+    }
+    next();
+  };
+}
+
 export async function registerRoutes(server: Server, app: Express): Promise<void> {
+  // Apply auth middleware to all routes (populates req.userId and req.userRole if session exists)
+  app.use(authMiddleware);
+  
+  // Apply authentication requirement to all /api/ routes EXCEPT public ones
+  // Public routes: /api/auth/*, /api/companies (GET for login dropdown)
+  app.use("/api", (req: AuthenticatedRequest, res, next) => {
+    // Allow public routes without authentication (req.path is relative to mount point /api)
+    const publicPaths = ["/auth/login", "/auth/logout", "/auth/session"];
+    const isCompaniesGet = req.path === "/companies" && req.method === "GET";
+    
+    if (publicPaths.includes(req.path) || isCompaniesGet) {
+      return next();
+    }
+    
+    // All other API routes require authentication
+    if (!req.userId || !req.userRole) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    next();
+  });
+  
   // Auth routes
   app.post("/api/auth/login", async (req, res) => {
     try {
@@ -31,6 +101,10 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
         return res.status(400).json({ message: "Selected company not found" });
       }
       
+      // Set session data (secure server-side authentication)
+      req.session.userId = user.id;
+      req.session.userRole = user.role;
+      
       const { password, securityPin, ...userWithoutSensitive } = user;
       res.json({ user: userWithoutSensitive, company });
     } catch (error: any) {
@@ -39,6 +113,34 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
         return res.status(400).json({ message: firstError.message });
       }
       res.status(400).json({ message: error.message });
+    }
+  });
+  
+  // Logout endpoint
+  app.post("/api/auth/logout", (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: "Failed to logout" });
+      }
+      res.clearCookie("connect.sid");
+      res.json({ message: "Logged out successfully" });
+    });
+  });
+  
+  // Get current session info
+  app.get("/api/auth/session", async (req: AuthenticatedRequest, res) => {
+    if (!req.userId) {
+      return res.json({ authenticated: false });
+    }
+    try {
+      const user = await storage.getUser(req.userId);
+      if (!user) {
+        return res.json({ authenticated: false });
+      }
+      const { password, securityPin, ...userWithoutSensitive } = user;
+      res.json({ authenticated: true, user: userWithoutSensitive });
+    } catch (error) {
+      res.json({ authenticated: false });
     }
   });
 
@@ -61,8 +163,8 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  // Users routes
-  app.get("/api/users", async (req, res) => {
+  // Users routes - Admin only for list/create/update/delete
+  app.get("/api/users", requireRole("admin"), async (req, res) => {
     try {
       const users = await storage.getUsers();
       const sanitized = users.map(({ password, securityPin, ...u }) => u);
@@ -72,7 +174,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  app.post("/api/users", async (req, res) => {
+  app.post("/api/users", requireRole("admin"), async (req, res) => {
     try {
       const data = insertUserSchema.parse(req.body);
       const user = await storage.createUser(data);
@@ -83,7 +185,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  app.patch("/api/users/:id", async (req, res) => {
+  app.patch("/api/users/:id", requireRole("admin"), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const user = await storage.updateUser(id, req.body);
@@ -97,7 +199,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  app.delete("/api/users/:id", async (req, res) => {
+  app.delete("/api/users/:id", requireRole("admin"), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteUser(id);

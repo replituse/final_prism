@@ -3,7 +3,8 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Pencil, Trash2, Settings, Eye, EyeOff } from "lucide-react";
+import { Plus, Pencil, Trash2, User, Eye, EyeOff, Mail, Phone, Lock } from "lucide-react";
+import { usePermissions } from "@/lib/permissions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -31,12 +32,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Header } from "@/components/header";
 import { DataTable, Column } from "@/components/data-table";
 import { EmptyState } from "@/components/empty-state";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import type { User, Company } from "@shared/schema";
+import type { User as UserType, Company } from "@shared/schema";
 
 const ROLES = [
   { value: "admin", label: "Admin", description: "Full access to all modules" },
@@ -46,6 +48,9 @@ const ROLES = [
 
 const createUserFormSchema = z.object({
   username: z.string().min(1, "Username is required"),
+  fullName: z.string().optional(),
+  email: z.string().email("Invalid email format").optional().or(z.literal("")),
+  mobile: z.string().optional(),
   password: z.string().min(4, "Password must be at least 4 characters"),
   securityPin: z.string().min(4, "Security PIN must be at least 4 characters"),
   role: z.enum(["admin", "gst", "non_gst"]),
@@ -55,6 +60,9 @@ const createUserFormSchema = z.object({
 
 const editUserFormSchema = z.object({
   username: z.string().min(1, "Username is required"),
+  fullName: z.string().optional(),
+  email: z.string().email("Invalid email format").optional().or(z.literal("")),
+  mobile: z.string().optional(),
   password: z.string().optional().refine((val) => !val || val.length >= 4, {
     message: "Password must be at least 4 characters if provided",
   }),
@@ -68,16 +76,43 @@ const editUserFormSchema = z.object({
 
 type UserFormValues = z.infer<typeof createUserFormSchema>;
 
+function getInitials(name: string | null | undefined, username: string): string {
+  if (name && name.trim()) {
+    const parts = name.trim().split(" ");
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return name.slice(0, 2).toUpperCase();
+  }
+  return username.slice(0, 2).toUpperCase();
+}
+
 export default function UsersPage() {
   const { toast } = useToast();
+  const permissions = usePermissions();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [editingUser, setEditingUser] = useState<UserType | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [deletingUser, setDeletingUser] = useState<User | null>(null);
+  const [deletingUser, setDeletingUser] = useState<UserType | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showPin, setShowPin] = useState(false);
 
-  const { data: users = [], isLoading } = useQuery<(User & { company?: Company })[]>({
+  if (!permissions.canView("users")) {
+    return (
+      <div className="flex flex-col h-full">
+        <Header title="User Management" />
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="text-center space-y-4">
+            <Lock className="h-12 w-12 mx-auto text-muted-foreground" />
+            <h2 className="text-xl font-semibold">Access Restricted</h2>
+            <p className="text-muted-foreground">You don't have permission to access this page.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const { data: users = [], isLoading } = useQuery<(UserType & { company?: Company })[]>({
     queryKey: ["/api/users"],
   });
 
@@ -89,6 +124,9 @@ export default function UsersPage() {
     resolver: zodResolver(editingUser ? editUserFormSchema : createUserFormSchema),
     defaultValues: {
       username: "",
+      fullName: "",
+      email: "",
+      mobile: "",
       password: "",
       securityPin: "",
       role: "non_gst",
@@ -102,6 +140,9 @@ export default function UsersPage() {
       return apiRequest("POST", "/api/users", {
         ...data,
         companyId: data.companyId ? parseInt(data.companyId) : null,
+        email: data.email || null,
+        fullName: data.fullName || null,
+        mobile: data.mobile || null,
       });
     },
     onSuccess: () => {
@@ -122,6 +163,9 @@ export default function UsersPage() {
     mutationFn: async (data: UserFormValues) => {
       const payload: Record<string, any> = {
         username: data.username,
+        fullName: data.fullName || null,
+        email: data.email || null,
+        mobile: data.mobile || null,
         role: data.role,
         companyId: data.companyId ? parseInt(data.companyId) : null,
         isActive: data.isActive,
@@ -166,11 +210,14 @@ export default function UsersPage() {
     },
   });
 
-  const handleOpenDialog = (user?: User) => {
+  const handleOpenDialog = (user?: UserType) => {
     if (user) {
       setEditingUser(user);
       form.reset({
         username: user.username,
+        fullName: user.fullName || "",
+        email: user.email || "",
+        mobile: user.mobile || "",
         password: "",
         securityPin: "",
         role: user.role as any,
@@ -181,6 +228,9 @@ export default function UsersPage() {
       setEditingUser(null);
       form.reset({
         username: "",
+        fullName: "",
+        email: "",
+        mobile: "",
         password: "",
         securityPin: "",
         role: "non_gst",
@@ -220,14 +270,46 @@ export default function UsersPage() {
     }
   };
 
-  const columns: Column<User & { company?: Company }>[] = [
+  const columns: Column<UserType & { company?: Company }>[] = [
     {
       key: "username",
-      header: "Username",
+      header: "User",
       cell: (row) => (
-        <div className="flex items-center gap-2">
-          <Settings className="h-4 w-4 text-muted-foreground" />
-          <span className="font-medium">{row.username}</span>
+        <div className="flex items-center gap-3">
+          <Avatar className="h-8 w-8">
+            <AvatarFallback className="text-xs">
+              {getInitials(row.fullName, row.username)}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col">
+            <span className="font-medium">{row.fullName || row.username}</span>
+            {row.fullName && (
+              <span className="text-xs text-muted-foreground">@{row.username}</span>
+            )}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "email",
+      header: "Contact",
+      cell: (row) => (
+        <div className="flex flex-col gap-0.5">
+          {row.email && (
+            <div className="flex items-center gap-1.5 text-sm">
+              <Mail className="h-3 w-3 text-muted-foreground" />
+              <span>{row.email}</span>
+            </div>
+          )}
+          {row.mobile && (
+            <div className="flex items-center gap-1.5 text-sm">
+              <Phone className="h-3 w-3 text-muted-foreground" />
+              <span>{row.mobile}</span>
+            </div>
+          )}
+          {!row.email && !row.mobile && (
+            <span className="text-muted-foreground">-</span>
+          )}
         </div>
       ),
     },
@@ -261,7 +343,7 @@ export default function UsersPage() {
       <div className="flex-1 p-6 overflow-auto">
         {users.length === 0 && !isLoading ? (
           <EmptyState
-            icon={Settings}
+            icon={User}
             title="No users yet"
             description="Add your first user to get started."
             actionLabel="Add User"
@@ -269,12 +351,14 @@ export default function UsersPage() {
           />
         ) : (
           <div className="space-y-4">
-            <div className="flex justify-end">
-              <Button onClick={() => handleOpenDialog()} data-testid="button-add-user">
-                <Plus className="h-4 w-4 mr-2" />
-                Add User
-              </Button>
-            </div>
+            {permissions.canCreate("users") && (
+              <div className="flex justify-end">
+                <Button onClick={() => handleOpenDialog()} data-testid="button-add-user">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add User
+                </Button>
+              </div>
+            )}
 
             <DataTable
               columns={columns}
@@ -284,25 +368,29 @@ export default function UsersPage() {
               onRowClick={handleOpenDialog}
               actions={(row) => (
                 <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleOpenDialog(row)}
-                    data-testid={`button-edit-user-${row.id}`}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setDeletingUser(row);
-                      setDeleteDialogOpen(true);
-                    }}
-                    data-testid={`button-delete-user-${row.id}`}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  {permissions.canEdit("users") && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleOpenDialog(row)}
+                      data-testid={`button-edit-user-${row.id}`}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {permissions.canDelete("users") && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        setDeletingUser(row);
+                        setDeleteDialogOpen(true);
+                      }}
+                      data-testid={`button-delete-user-${row.id}`}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               )}
             />
@@ -311,7 +399,7 @@ export default function UsersPage() {
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={handleCloseDialog}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>{editingUser ? "Edit User" : "Add User"}</DialogTitle>
             <DialogDescription>
@@ -323,144 +411,225 @@ export default function UsersPage() {
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="username"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Username *</FormLabel>
-                    <FormControl>
-                      <Input data-testid="input-username" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Password {editingUser ? "(leave blank to keep)" : "*"}
-                    </FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          type={showPassword ? "text" : "password"}
-                          data-testid="input-password"
-                          {...field}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
-                          {showPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="securityPin"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Security PIN {editingUser ? "(leave blank to keep)" : "*"}
-                    </FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          type={showPin ? "text" : "password"}
-                          data-testid="input-pin"
-                          {...field}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
-                          onClick={() => setShowPin(!showPin)}
-                        >
-                          {showPin ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="role"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Role *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Username *</FormLabel>
                       <FormControl>
-                        <SelectTrigger data-testid="select-role">
-                          <SelectValue placeholder="Select role" />
-                        </SelectTrigger>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input 
+                            className="pl-9"
+                            placeholder="Enter username"
+                            data-testid="input-username" 
+                            {...field} 
+                          />
+                        </div>
                       </FormControl>
-                      <SelectContent>
-                        {ROLES.map((role) => (
-                          <SelectItem key={role.value} value={role.value}>
-                            <div>
-                              <span>{role.label}</span>
-                              <span className="text-xs text-muted-foreground ml-2">
-                                {role.description}
-                              </span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="companyId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Company</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                <FormField
+                  control={form.control}
+                  name="fullName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Full Name</FormLabel>
                       <FormControl>
-                        <SelectTrigger data-testid="select-company">
-                          <SelectValue placeholder="Select company" />
-                        </SelectTrigger>
+                        <Input 
+                          placeholder="Enter full name"
+                          data-testid="input-fullname" 
+                          {...field} 
+                        />
                       </FormControl>
-                      <SelectContent>
-                        {companies.map((company) => (
-                          <SelectItem key={company.id} value={company.id.toString()}>
-                            {company.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input 
+                            type="email"
+                            className="pl-9"
+                            placeholder="user@example.com"
+                            data-testid="input-email" 
+                            {...field} 
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="mobile"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Mobile</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input 
+                            className="pl-9"
+                            placeholder="+91 98765 43210"
+                            data-testid="input-mobile" 
+                            {...field} 
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Password {editingUser ? "(leave blank to keep)" : "*"}
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Enter password"
+                            data-testid="input-password"
+                            {...field}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                            onClick={() => setShowPassword(!showPassword)}
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="securityPin"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Security PIN {editingUser ? "(leave blank to keep)" : "*"}
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            type={showPin ? "text" : "password"}
+                            placeholder="Enter PIN"
+                            data-testid="input-pin"
+                            {...field}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                            onClick={() => setShowPin(!showPin)}
+                          >
+                            {showPin ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="role"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Role *</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-role">
+                            <SelectValue placeholder="Select role" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {ROLES.map((role) => (
+                            <SelectItem key={role.value} value={role.value}>
+                              <div className="flex flex-col">
+                                <span>{role.label}</span>
+                                <span className="text-xs text-muted-foreground">
+                                  {role.description}
+                                </span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="companyId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Company</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-company">
+                            <SelectValue placeholder="Select company" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {companies.map((company) => (
+                            <SelectItem key={company.id} value={company.id.toString()}>
+                              {company.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <FormField
                 control={form.control}
