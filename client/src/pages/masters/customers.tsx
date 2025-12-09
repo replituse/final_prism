@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Pencil, Trash2, Users, Phone, Mail, User, X } from "lucide-react";
+import { Plus, Pencil, Trash2, Users, Phone, Mail, User, X, Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,6 +24,20 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from "@/components/ui/command";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Header } from "@/components/header";
@@ -31,7 +45,31 @@ import { DataTable, Column } from "@/components/data-table";
 import { EmptyState } from "@/components/empty-state";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { cn } from "@/lib/utils";
 import type { CustomerWithContacts, Customer, CustomerContact } from "@shared/schema";
+
+const DEFAULT_DESIGNATIONS = [
+  "Director",
+  "Producer",
+  "Executive Producer",
+  "Line Producer",
+  "Production Manager",
+  "Production Coordinator",
+  "Post-Production Supervisor",
+  "Editor",
+  "Sound Designer",
+  "Colorist",
+  "VFX Supervisor",
+  "Creative Director",
+  "Marketing Head",
+  "Finance Manager",
+  "Accounts Manager",
+  "CEO",
+  "CFO",
+  "COO",
+  "Managing Director",
+  "General Manager",
+];
 
 const contactSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -60,6 +98,24 @@ export default function CustomersPage() {
   const [editingCustomer, setEditingCustomer] = useState<CustomerWithContacts | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingCustomer, setDeletingCustomer] = useState<Customer | null>(null);
+  const [customDesignations, setCustomDesignations] = useState<string[]>([]);
+  const [addDesignationDialogOpen, setAddDesignationDialogOpen] = useState(false);
+  const [newDesignation, setNewDesignation] = useState("");
+  const [designationPopoverOpen, setDesignationPopoverOpen] = useState<{[key: number]: boolean}>({});
+
+  const allDesignations = useMemo(() => {
+    const combined = [...DEFAULT_DESIGNATIONS, ...customDesignations];
+    return [...new Set(combined)].sort();
+  }, [customDesignations]);
+
+  const handleAddDesignation = () => {
+    if (newDesignation.trim() && !allDesignations.includes(newDesignation.trim())) {
+      setCustomDesignations(prev => [...prev, newDesignation.trim()]);
+      toast({ title: `Designation "${newDesignation.trim()}" added` });
+    }
+    setNewDesignation("");
+    setAddDesignationDialogOpen(false);
+  };
 
   const { data: customers = [], isLoading } = useQuery<CustomerWithContacts[]>({
     queryKey: ["/api/customers"],
@@ -468,11 +524,72 @@ export default function CustomersPage() {
                           control={form.control}
                           name={`contacts.${index}.designation`}
                           render={({ field }) => (
-                            <FormItem>
+                            <FormItem className="flex flex-col">
                               <FormLabel>Designation</FormLabel>
-                              <FormControl>
-                                <Input data-testid={`input-contact-designation-${index}`} {...field} />
-                              </FormControl>
+                              <Popover 
+                                open={designationPopoverOpen[index] || false} 
+                                onOpenChange={(open) => setDesignationPopoverOpen(prev => ({...prev, [index]: open}))}
+                              >
+                                <PopoverTrigger asChild>
+                                  <FormControl>
+                                    <Button
+                                      variant="outline"
+                                      role="combobox"
+                                      className={cn(
+                                        "justify-between font-normal",
+                                        !field.value && "text-muted-foreground"
+                                      )}
+                                      data-testid={`select-contact-designation-${index}`}
+                                    >
+                                      {field.value || "Select designation"}
+                                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                    </Button>
+                                  </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-[250px] p-0" align="start">
+                                  <Command>
+                                    <CommandInput placeholder="Search designation..." data-testid={`input-designation-search-${index}`} />
+                                    <CommandList>
+                                      <CommandEmpty>No designation found.</CommandEmpty>
+                                      <CommandGroup>
+                                        {allDesignations.map((designation) => (
+                                          <CommandItem
+                                            key={designation}
+                                            value={designation}
+                                            onSelect={() => {
+                                              field.onChange(designation);
+                                              setDesignationPopoverOpen(prev => ({...prev, [index]: false}));
+                                            }}
+                                            data-testid={`option-designation-${designation.toLowerCase().replace(/\s+/g, '-')}`}
+                                          >
+                                            <Check
+                                              className={cn(
+                                                "mr-2 h-4 w-4",
+                                                field.value === designation ? "opacity-100" : "opacity-0"
+                                              )}
+                                            />
+                                            {designation}
+                                          </CommandItem>
+                                        ))}
+                                      </CommandGroup>
+                                      <CommandSeparator />
+                                      <CommandGroup>
+                                        <CommandItem
+                                          onSelect={() => {
+                                            setDesignationPopoverOpen(prev => ({...prev, [index]: false}));
+                                            setAddDesignationDialogOpen(true);
+                                          }}
+                                          className="text-primary"
+                                          data-testid={`button-add-new-designation-${index}`}
+                                        >
+                                          <Plus className="mr-2 h-4 w-4" />
+                                          Add Designation
+                                        </CommandItem>
+                                      </CommandGroup>
+                                    </CommandList>
+                                  </Command>
+                                </PopoverContent>
+                              </Popover>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -568,6 +685,50 @@ export default function CustomersPage() {
               data-testid="button-confirm-delete"
             >
               {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={addDesignationDialogOpen} onOpenChange={setAddDesignationDialogOpen}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Add New Designation</DialogTitle>
+            <DialogDescription>
+              Enter a new designation to add to the list.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              placeholder="Enter designation name"
+              value={newDesignation}
+              onChange={(e) => setNewDesignation(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleAddDesignation();
+                }
+              }}
+              data-testid="input-new-designation"
+            />
+          </div>
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setNewDesignation("");
+                setAddDesignationDialogOpen(false);
+              }}
+              data-testid="button-cancel-add-designation"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAddDesignation}
+              disabled={!newDesignation.trim()}
+              data-testid="button-confirm-add-designation"
+            >
+              Add
             </Button>
           </DialogFooter>
         </DialogContent>
