@@ -60,6 +60,7 @@ interface BookingFormProps {
   onOpenChange: (open: boolean) => void;
   booking?: Booking | null;
   defaultDate?: Date;
+  readOnly?: boolean;
 }
 
 interface ConflictResult {
@@ -69,7 +70,7 @@ interface ConflictResult {
   leaveInfo?: any;
 }
 
-export function BookingForm({ open, onOpenChange, booking, defaultDate }: BookingFormProps) {
+export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly = false }: BookingFormProps) {
   const { toast } = useToast();
   const [conflictResult, setConflictResult] = useState<ConflictResult | null>(null);
   const [isCheckingConflicts, setIsCheckingConflicts] = useState(false);
@@ -274,9 +275,15 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate }: Bookin
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{booking ? "Edit Booking" : "New Booking"}</DialogTitle>
+          <DialogTitle>
+            {readOnly ? "View Booking (Read Only)" : booking ? "Edit Booking" : "New Booking"}
+          </DialogTitle>
           <DialogDescription>
-            {booking ? "Update the booking details below." : "Fill in the details to create a new booking."}
+            {readOnly 
+              ? "This booking is cancelled and cannot be edited."
+              : booking 
+                ? "Update the booking details below." 
+                : "Fill in the details to create a new booking."}
           </DialogDescription>
         </DialogHeader>
 
@@ -315,7 +322,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate }: Bookin
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Room *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value} disabled={readOnly}>
                       <FormControl>
                         <SelectTrigger data-testid="select-room">
                           <SelectValue placeholder="Select room" />
@@ -340,7 +347,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate }: Bookin
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Customer *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value} disabled={readOnly}>
                       <FormControl>
                         <SelectTrigger data-testid="select-customer">
                           <SelectValue placeholder="Select customer" />
@@ -370,7 +377,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate }: Bookin
                     <Select 
                       onValueChange={field.onChange} 
                       value={field.value}
-                      disabled={!selectedCustomerId}
+                      disabled={readOnly || !selectedCustomerId}
                     >
                       <FormControl>
                         <SelectTrigger data-testid="select-project">
@@ -399,7 +406,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate }: Bookin
                     <Select 
                       onValueChange={field.onChange} 
                       value={field.value}
-                      disabled={!selectedCustomerId}
+                      disabled={readOnly || !selectedCustomerId}
                     >
                       <FormControl>
                         <SelectTrigger data-testid="select-contact">
@@ -426,7 +433,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate }: Bookin
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Editor</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value} disabled={readOnly}>
                     <FormControl>
                       <SelectTrigger data-testid="select-editor">
                         <SelectValue placeholder="Select editor" />
@@ -453,7 +460,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate }: Bookin
                   <FormItem>
                     <FormLabel>Date *</FormLabel>
                     <FormControl>
-                      <Input type="date" data-testid="input-booking-date" {...field} />
+                      <Input type="date" data-testid="input-booking-date" disabled={readOnly} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -467,7 +474,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate }: Bookin
                   <FormItem>
                     <FormLabel>From Time *</FormLabel>
                     <FormControl>
-                      <Input type="time" data-testid="input-from-time" {...field} />
+                      <Input type="time" data-testid="input-from-time" disabled={readOnly} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -481,7 +488,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate }: Bookin
                   <FormItem>
                     <FormLabel>To Time *</FormLabel>
                     <FormControl>
-                      <Input type="time" data-testid="input-to-time" {...field} />
+                      <Input type="time" data-testid="input-to-time" disabled={readOnly} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -497,7 +504,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate }: Bookin
                   <FormItem>
                     <FormLabel>Actual From</FormLabel>
                     <FormControl>
-                      <Input type="time" data-testid="input-actual-from-time" {...field} />
+                      <Input type="time" data-testid="input-actual-from-time" disabled={readOnly} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -511,7 +518,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate }: Bookin
                   <FormItem>
                     <FormLabel>Actual To</FormLabel>
                     <FormControl>
-                      <Input type="time" data-testid="input-actual-to-time" {...field} />
+                      <Input type="time" data-testid="input-actual-to-time" disabled={readOnly} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -529,6 +536,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate }: Bookin
                         type="number" 
                         min="0" 
                         data-testid="input-break-hours"
+                        disabled={readOnly}
                         {...field} 
                       />
                     </FormControl>
@@ -545,7 +553,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate }: Bookin
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Status *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value} disabled={readOnly}>
                       <FormControl>
                         <SelectTrigger data-testid="select-status">
                           <SelectValue placeholder="Select status" />
@@ -555,6 +563,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate }: Bookin
                         <SelectItem value="planning">Planning</SelectItem>
                         <SelectItem value="tentative">Tentative</SelectItem>
                         <SelectItem value="confirmed">Confirmed</SelectItem>
+                        {readOnly && <SelectItem value="cancelled">Cancelled</SelectItem>}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -574,6 +583,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate }: Bookin
                       placeholder="Add any additional notes..."
                       className="resize-none"
                       data-testid="input-notes"
+                      disabled={readOnly}
                       {...field}
                     />
                   </FormControl>
@@ -612,11 +622,13 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate }: Bookin
                 onClick={() => onOpenChange(false)}
                 data-testid="button-cancel"
               >
-                Cancel
+                {readOnly ? "Close" : "Cancel"}
               </Button>
-              <Button type="submit" disabled={isPending} data-testid="button-save-booking">
-                {isPending ? "Saving..." : booking ? "Update Booking" : "Create Booking"}
-              </Button>
+              {!readOnly && (
+                <Button type="submit" disabled={isPending} data-testid="button-save-booking">
+                  {isPending ? "Saving..." : booking ? "Update Booking" : "Create Booking"}
+                </Button>
+              )}
             </DialogFooter>
           </form>
         </Form>

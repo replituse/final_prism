@@ -83,6 +83,7 @@ export default function BookingPage() {
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [bookingFormOpen, setBookingFormOpen] = useState(false);
   const [editingBooking, setEditingBooking] = useState<BookingWithRelations | null>(null);
+  const [viewingCancelledBooking, setViewingCancelledBooking] = useState<BookingWithRelations | null>(null);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [cancellingBooking, setCancellingBooking] = useState<BookingWithRelations | null>(null);
   const [cancelReason, setCancelReason] = useState("");
@@ -156,8 +157,16 @@ export default function BookingPage() {
   const handleToday = () => setCurrentMonth(new Date());
 
   const handleEditBooking = (booking: BookingWithRelations) => {
-    setEditingBooking(booking);
-    setBookingFormOpen(true);
+    if (booking.status === "cancelled") {
+      setViewingCancelledBooking(booking);
+    } else {
+      setEditingBooking(booking);
+      setBookingFormOpen(true);
+    }
+  };
+
+  const handleViewCancelledBooking = (booking: BookingWithRelations) => {
+    setViewingCancelledBooking(booking);
   };
 
   const handleCancelBooking = (booking: BookingWithRelations) => {
@@ -445,6 +454,15 @@ export default function BookingPage() {
         }}
         booking={editingBooking}
         defaultDate={selectedDate}
+      />
+
+      <BookingForm
+        open={!!viewingCancelledBooking}
+        onOpenChange={(open) => {
+          if (!open) setViewingCancelledBooking(null);
+        }}
+        booking={viewingCancelledBooking}
+        readOnly={true}
       />
 
       <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>

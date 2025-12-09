@@ -57,6 +57,7 @@ export function BookingCard({
   };
 
   const isEditable = booking.status !== "cancelled";
+  const isCancelled = booking.status === "cancelled";
   const customerName = booking.customer?.name || "Unknown Customer";
 
   return (
@@ -65,10 +66,9 @@ export function BookingCard({
         <div
           className={cn(
             "relative rounded-md border-l-4 p-2 text-left hover-elevate cursor-pointer",
-            statusColors[booking.status as keyof typeof statusColors],
-            !isEditable && "cursor-not-allowed"
+            statusColors[booking.status as keyof typeof statusColors]
           )}
-          onClick={() => isEditable && onEdit?.(booking)}
+          onClick={() => onEdit?.(booking)}
           data-testid={`booking-card-${booking.id}`}
         >
           {!isEditable && (
