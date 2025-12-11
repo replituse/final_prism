@@ -137,8 +137,8 @@ export default function ChalanPage() {
           notes: chalanToEdit.notes || "",
           items: chalanToEdit.items?.length ? chalanToEdit.items.map(item => ({
             description: item.description,
-            quantity: item.quantity.toString(),
-            rate: item.rate.toString(),
+            quantity: (item.quantity ?? "1").toString(),
+            rate: (item.rate ?? "0").toString(),
           })) : [{ description: "", quantity: "1", rate: "0" }],
         });
         setDialogOpen(true);
@@ -165,20 +165,25 @@ export default function ChalanPage() {
 
   const createMutation = useMutation({
     mutationFn: async (data: ChalanFormValues) => {
-      const items = data.items.map((item) => ({
-        description: item.description,
-        quantity: parseFloat(item.quantity) || 1,
-        rate: parseFloat(item.rate) || 0,
-        amount: (parseFloat(item.quantity) || 1) * (parseFloat(item.rate) || 0),
-      }));
-      const totalAmount = items.reduce((sum, item) => sum + item.amount, 0);
+      const items = data.items.map((item) => {
+        const qty = parseFloat(item.quantity) || 1;
+        const rate = parseFloat(item.rate) || 0;
+        const amount = qty * rate;
+        return {
+          description: item.description,
+          quantity: qty.toString(),
+          rate: rate.toString(),
+          amount: amount.toString(),
+        };
+      });
+      const totalAmount = items.reduce((sum, item) => sum + parseFloat(item.amount), 0);
 
       return apiRequest("POST", "/api/chalans", {
         customerId: parseInt(data.customerId),
         projectId: parseInt(data.projectId),
         chalanDate: data.chalanDate,
         notes: data.notes,
-        totalAmount,
+        totalAmount: totalAmount.toString(),
         items,
       });
     },
@@ -200,20 +205,25 @@ export default function ChalanPage() {
 
   const updateMutation = useMutation({
     mutationFn: async (data: ChalanFormValues & { id: number }) => {
-      const items = data.items.map((item) => ({
-        description: item.description,
-        quantity: parseFloat(item.quantity) || 1,
-        rate: parseFloat(item.rate) || 0,
-        amount: (parseFloat(item.quantity) || 1) * (parseFloat(item.rate) || 0),
-      }));
-      const totalAmount = items.reduce((sum, item) => sum + item.amount, 0);
+      const items = data.items.map((item) => {
+        const qty = parseFloat(item.quantity) || 1;
+        const rate = parseFloat(item.rate) || 0;
+        const amount = qty * rate;
+        return {
+          description: item.description,
+          quantity: qty.toString(),
+          rate: rate.toString(),
+          amount: amount.toString(),
+        };
+      });
+      const totalAmount = items.reduce((sum, item) => sum + parseFloat(item.amount), 0);
 
       return apiRequest("PATCH", `/api/chalans/${data.id}`, {
         customerId: parseInt(data.customerId),
         projectId: parseInt(data.projectId),
         chalanDate: data.chalanDate,
         notes: data.notes,
-        totalAmount,
+        totalAmount: totalAmount.toString(),
         items,
       });
     },
@@ -331,8 +341,8 @@ export default function ChalanPage() {
       notes: chalan.notes || "",
       items: chalan.items?.length ? chalan.items.map(item => ({
         description: item.description,
-        quantity: item.quantity.toString(),
-        rate: item.rate.toString(),
+        quantity: (item.quantity ?? "1").toString(),
+        rate: (item.rate ?? "0").toString(),
       })) : [{ description: "", quantity: "1", rate: "0" }],
     });
     setDialogOpen(true);
