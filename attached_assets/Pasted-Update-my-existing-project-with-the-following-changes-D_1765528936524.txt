@@ -1,0 +1,112 @@
+Update my existing project with the following changes.
+Do NOT change my project’s major functionality, working flow, structure, or overall design.
+Only add, fix, or enhance features exactly as described below.
+
+1) Add “Chalan Revise” Button Inside Chalan Entry
+
+Add one “Revise Chalan” button inside the existing Chalan Entry screen.
+
+Do NOT create a separate module/screen—revise should open a new full screen, not a popup.
+
+In the new “Revise Chalan” screen:
+
+Show all details of the selected chalan.
+
+Include all filters (date range, status, customer, booking reference, etc.) same as current chalan revise module.
+
+UI must be clean, attractive, and follow existing project colors.
+
+Keep all core logic same—just embed revise functionality inside the chalan entry.
+
+2) Add Full History Button in Booking, Chalan & Leave Sections
+
+Add a small “History” button in:
+
+Booking section
+
+Chalan section (cancelled, delivered, confirmed, pending, etc.)
+
+Leave entry section
+
+When clicked:
+
+Open a full-screen history viewer (not popup).
+
+Show complete history of:
+
+Created
+
+Updated
+
+Cancelled
+
+Delivered
+
+Status changed
+
+Revised
+
+History must include:
+
+Date & Time
+
+User who performed the action
+
+Old values → New values (if applicable)
+
+Add filters (date range, user, type of activity).
+
+Never delete any history (permanent log).
+
+Display in reverse chronological order.
+
+3) Status Fields Should Be Clickable & Toggle Status
+
+Wherever the project has status fields, e.g.:
+
+Active / Inactive
+
+Delivered / Pending
+
+Confirmed / Cancelled
+
+Available / Not available
+
+etc.
+
+Add these functionalities:
+
+Status labels should be clickable.
+
+On click → show small dropdown or toggle to switch status.
+
+Apply proper permission checks (only authorized users can change status).
+
+Status update should:
+
+Immediately update in database
+
+Update UI instantly
+
+Add an entry in history (from point #2)
+
+⚠️ Important Requirements
+Keep all code structure, logic, UI layout, styling standards exactly same as current project.
+
+Only fix or add features without breaking existing modules.
+
+No major rewrite.
+
+Just improve, extend, and fix functionalities as described.
+
+🎯 Final Output Expected
+
+"Chalan Revise" fully functional inside chalan entry
+
+Full history tracking system (create/update/cancel/status/logs)
+
+Status fields fully clickable with proper toggling
+
+Clean UI and smooth functionality
+
+All features working without breaking current logic

@@ -4,7 +4,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format, differenceInDays } from "date-fns";
-import { Plus, Pencil, Trash2, UserMinus, Calendar } from "lucide-react";
+import { Plus, Pencil, Trash2, UserMinus, Calendar, History } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -56,6 +57,8 @@ export default function LeavesPage() {
   const [editingLeave, setEditingLeave] = useState<LeaveWithEditor | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingLeave, setDeletingLeave] = useState<LeaveWithEditor | null>(null);
+  const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
+  const [historyLeave, setHistoryLeave] = useState<LeaveWithEditor | null>(null);
 
   const { data: leaves = [], isLoading } = useQuery<LeaveWithEditor[]>({
     queryKey: ["/api/editor-leaves"],
@@ -261,6 +264,17 @@ export default function LeavesPage() {
                   <Button
                     variant="ghost"
                     size="icon"
+                    onClick={() => {
+                      setHistoryLeave(row);
+                      setHistoryDialogOpen(true);
+                    }}
+                    data-testid={`button-history-leave-${row.id}`}
+                  >
+                    <History className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={() => handleOpenDialog(row)}
                     data-testid={`button-edit-leave-${row.id}`}
                   >
@@ -413,6 +427,66 @@ export default function LeavesPage() {
               data-testid="button-confirm-delete"
             >
               {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={historyDialogOpen} onOpenChange={(open) => {
+        setHistoryDialogOpen(open);
+        if (!open) setHistoryLeave(null);
+      }}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <History className="h-5 w-5" />
+              Leave History
+            </DialogTitle>
+            <DialogDescription>
+              Complete history of this leave record
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="max-h-[400px]">
+            <div className="space-y-3">
+              <div className="p-3 rounded-md bg-muted/50">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-medium text-sm">Created</span>
+                  <span className="text-xs text-muted-foreground font-mono">
+                    {historyLeave?.createdAt ? format(new Date(historyLeave.createdAt), "PPp") : "-"}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Leave created for {historyLeave?.editor?.name || "Unknown editor"}
+                </p>
+              </div>
+              
+              <div className="p-3 rounded-md bg-muted/50">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-medium text-sm">Leave Period</span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {historyLeave?.fromDate ? format(new Date(historyLeave.fromDate), "PP") : "-"} to {historyLeave?.toDate ? format(new Date(historyLeave.toDate), "PP") : "-"}
+                </p>
+                {historyLeave && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Duration: {differenceInDays(new Date(historyLeave.toDate), new Date(historyLeave.fromDate)) + 1} days
+                  </p>
+                )}
+              </div>
+
+              {historyLeave?.reason && (
+                <div className="p-3 rounded-md bg-muted/50">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-medium text-sm">Reason</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{historyLeave.reason}</p>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setHistoryDialogOpen(false)}>
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>

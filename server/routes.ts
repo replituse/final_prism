@@ -765,6 +765,32 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
+  app.patch("/api/chalans/:id/status", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { isCancelled } = req.body;
+      
+      if (typeof isCancelled !== 'boolean') {
+        return res.status(400).json({ message: "isCancelled must be a boolean" });
+      }
+      
+      const chalan = await storage.updateChalanStatus(id, isCancelled);
+      if (!chalan) {
+        return res.status(404).json({ message: "Chalan not found" });
+      }
+      
+      // Create a revision log for the status change
+      await storage.createChalanRevision(
+        id, 
+        isCancelled ? "Status changed to Cancelled" : "Status changed to Active"
+      );
+      
+      res.json(chalan);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
   app.patch("/api/chalans/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);

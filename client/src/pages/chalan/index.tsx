@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
 import { useSearch, useLocation } from "wouter";
-import { Plus, Trash2, FileText, Eye, X, Pencil, Calendar, Link2 } from "lucide-react";
+import { Plus, Trash2, FileText, Eye, X, Pencil, Calendar, Link2, History, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,6 +34,11 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Header } from "@/components/header";
 import { DataTable, Column } from "@/components/data-table";
 import { EmptyState } from "@/components/empty-state";
@@ -41,7 +46,8 @@ import { ChalanInvoice } from "@/components/chalan-invoice";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth-context";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import type { ChalanWithItems, Customer, Project, Booking } from "@shared/schema";
+import type { ChalanWithItems, Customer, Project, Booking, ChalanRevision } from "@shared/schema";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface BookingWithRelations extends Booking {
   room?: { name: string };
@@ -79,6 +85,8 @@ export default function ChalanPage() {
   const [urlParamsProcessed, setUrlParamsProcessed] = useState(false);
   const [editingChalan, setEditingChalan] = useState<ChalanWithItems | null>(null);
   const [selectedBookingId, setSelectedBookingId] = useState<string>("");
+  const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
+  const [historyChalan, setHistoryChalan] = useState<ChalanWithItems | null>(null);
 
   const canEditChalans = user?.role === "admin" || user?.role === "gst";
 
@@ -92,6 +100,11 @@ export default function ChalanPage() {
 
   const { data: bookings = [] } = useQuery<BookingWithRelations[]>({
     queryKey: ["/api/bookings"],
+  });
+
+  const { data: chalanRevisions = [] } = useQuery<ChalanRevision[]>({
+    queryKey: [`/api/chalans/${historyChalan?.id}/revisions`],
+    enabled: !!historyChalan && historyDialogOpen,
   });
 
   const form = useForm<ChalanFormValues>({
@@ -263,6 +276,27 @@ export default function ChalanPage() {
     },
   });
 
+  const statusToggleMutation = useMutation({
+    mutationFn: async ({ id, isCancelled }: { id: number; isCancelled: boolean }) => {
+      return apiRequest("PATCH", `/api/chalans/${id}/status`, { isCancelled });
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ predicate: (query) => 
+        typeof query.queryKey[0] === 'string' && query.queryKey[0].startsWith('/api/chalans')
+      });
+      toast({ 
+        title: variables.isCancelled ? "Chalan cancelled" : "Chalan reactivated",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error updating status",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleOpenDialog = () => {
     if (!canEditChalans) {
       toast({
@@ -411,9 +445,51 @@ export default function ChalanPage() {
       key: "isCancelled",
       header: "Status",
       cell: (row) => (
-        <Badge variant={row.isCancelled ? "destructive" : "default"}>
-          {row.isCancelled ? "Cancelled" : "Active"}
-        </Badge>
+        <Popover>
+          <PopoverTrigger asChild>
+            <button 
+              className="cursor-pointer"
+              onClick={(e) => e.stopPropagation()}
+              data-testid={`button-toggle-status-${row.id}`}
+            >
+              <Badge variant={row.isCancelled ? "destructive" : "default"}>
+                {row.isCancelled ? "Cancelled" : "Active"}
+              </Badge>
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-40 p-2" align="start">
+            <div className="flex flex-col gap-1">
+              <Button
+                variant={!row.isCancelled ? "secondary" : "ghost"}
+                size="sm"
+                className="justify-start"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (row.isCancelled) {
+                    statusToggleMutation.mutate({ id: row.id, isCancelled: false });
+                  }
+                }}
+                data-testid={`button-set-active-${row.id}`}
+              >
+                Active
+              </Button>
+              <Button
+                variant={row.isCancelled ? "secondary" : "ghost"}
+                size="sm"
+                className="justify-start"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!row.isCancelled) {
+                    statusToggleMutation.mutate({ id: row.id, isCancelled: true });
+                  }
+                }}
+                data-testid={`button-set-cancelled-${row.id}`}
+              >
+                Cancelled
+              </Button>
+            </div>
+          </PopoverContent>
+        </Popover>
       ),
     },
   ];
@@ -435,14 +511,22 @@ export default function ChalanPage() {
           />
         ) : (
           <div className="space-y-4">
-            {canEditChalans && (
-              <div className="flex justify-end">
+            <div className="flex justify-end gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => setLocation("/chalan/revise")}
+                data-testid="button-revise-chalan"
+              >
+                <ClipboardList className="h-4 w-4 mr-2" />
+                Revise Chalan
+              </Button>
+              {canEditChalans && (
                 <Button onClick={handleOpenDialog} data-testid="button-create-chalan">
                   <Plus className="h-4 w-4 mr-2" />
                   Create Chalan
                 </Button>
-              </div>
-            )}
+              )}
+            </div>
 
             <DataTable
               columns={columns}
@@ -458,6 +542,17 @@ export default function ChalanPage() {
                     data-testid={`button-view-chalan-${row.id}`}
                   >
                     <Eye className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      setHistoryChalan(row);
+                      setHistoryDialogOpen(true);
+                    }}
+                    data-testid={`button-history-chalan-${row.id}`}
+                  >
+                    <History className="h-4 w-4" />
                   </Button>
                   {canEditChalans && !row.isCancelled && (
                     <Button
@@ -755,6 +850,79 @@ export default function ChalanPage() {
               disabled={deleteMutation.isPending}
             >
               {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={historyDialogOpen} onOpenChange={(open) => {
+        setHistoryDialogOpen(open);
+        if (!open) setHistoryChalan(null);
+      }}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <History className="h-5 w-5" />
+              Chalan History
+            </DialogTitle>
+            <DialogDescription>
+              Complete history of changes for chalan {historyChalan?.chalanNumber}
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="max-h-[400px]">
+            <div className="space-y-3">
+              <div className="p-3 rounded-md bg-muted/50">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-medium text-sm">Created</span>
+                  <span className="text-xs text-muted-foreground font-mono">
+                    {historyChalan?.createdAt ? format(new Date(historyChalan.createdAt), "PPp") : "-"}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Chalan created for {historyChalan?.customer?.name} - {historyChalan?.project?.name}
+                </p>
+              </div>
+              
+              {chalanRevisions.length > 0 ? (
+                chalanRevisions.map((revision) => (
+                  <div
+                    key={revision.id}
+                    className="p-3 rounded-md bg-muted/50"
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <Badge variant="outline">
+                        Revision #{revision.revisionNumber}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground font-mono">
+                        {format(new Date(revision.createdAt), "PPp")}
+                      </span>
+                    </div>
+                    {revision.changes && (
+                      <p className="text-sm text-muted-foreground">{revision.changes}</p>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-4 text-sm text-muted-foreground">
+                  No revisions yet
+                </div>
+              )}
+
+              {historyChalan?.isCancelled && (
+                <div className="p-3 rounded-md bg-destructive/10 border border-destructive/20">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-medium text-sm text-destructive">Cancelled</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    This chalan has been cancelled
+                  </p>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setHistoryDialogOpen(false)}>
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -117,6 +117,7 @@ export interface IStorage {
   getChalan(id: number): Promise<any | undefined>;
   createChalan(chalan: InsertChalan, items: InsertChalanItem[]): Promise<Chalan>;
   cancelChalan(id: number, reason: string): Promise<Chalan | undefined>;
+  updateChalanStatus(id: number, isCancelled: boolean): Promise<Chalan | undefined>;
   getChalanRevisions(chalanId: number): Promise<ChalanRevision[]>;
   createChalanRevision(chalanId: number, changes: string, userId?: number): Promise<ChalanRevision>;
 
@@ -916,6 +917,18 @@ export class DatabaseStorage implements IStorage {
     const [updated] = await db
       .update(chalans)
       .set({ isCancelled: true, cancelReason: reason })
+      .where(eq(chalans.id, id))
+      .returning();
+    return updated;
+  }
+
+  async updateChalanStatus(id: number, isCancelled: boolean): Promise<Chalan | undefined> {
+    const [updated] = await db
+      .update(chalans)
+      .set({ 
+        isCancelled, 
+        cancelReason: isCancelled ? "Cancelled via status toggle" : null 
+      })
       .where(eq(chalans.id, id))
       .returning();
     return updated;
