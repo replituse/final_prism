@@ -3,10 +3,11 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Pencil, Trash2, Building2, Users } from "lucide-react";
+import { Plus, Pencil, Trash2, Building2, Users, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -140,6 +141,28 @@ export default function RoomsPage() {
     },
   });
 
+  const [togglingId, setTogglingId] = useState<number | null>(null);
+  const toggleStatusMutation = useMutation({
+    mutationFn: async ({ id, isActive }: { id: number; isActive: boolean }) => {
+      setTogglingId(id);
+      return apiRequest("PATCH", `/api/rooms/${id}`, { isActive });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/rooms"] });
+      toast({ title: "Status updated" });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error updating status",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+    onSettled: () => {
+      setTogglingId(null);
+    },
+  });
+
   const handleOpenDialog = (room?: Room) => {
     if (room) {
       setEditingRoom(room);
@@ -211,9 +234,18 @@ export default function RoomsPage() {
       key: "isActive",
       header: "Status",
       cell: (row) => (
-        <Badge variant={row.isActive ? "default" : "secondary"}>
-          {row.isActive ? "Active" : "Inactive"}
-        </Badge>
+        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+          {togglingId === row.id ? (
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          ) : (
+            <Switch
+              checked={row.isActive}
+              onCheckedChange={(checked) => toggleStatusMutation.mutate({ id: row.id, isActive: checked })}
+              data-testid={`switch-status-${row.id}`}
+            />
+          )}
+          <span className="text-sm text-muted-foreground">{row.isActive ? "Active" : "Inactive"}</span>
+        </div>
       ),
     },
   ];
