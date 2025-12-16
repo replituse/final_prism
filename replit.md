@@ -195,3 +195,19 @@ npx tsx server/seed-demo.ts
 - **Booking Card Enhancement**: Added hasChalan prop to show "Generate Chalan" or "View Chalan" based on chalan existence
 - **Storage Methods**: Added getDesignations, getDesignationByName, createDesignation, getChalanByBookingId, updateChalan
 - **Decimal Support**: Chalan items now support decimal quantity, rate, and amount for precise pricing
+
+### December 16, 2025 Updates - User Rights & Permissions
+- **Custom Role Support**: Added "custom" role to UserRole enum for granular database-driven permissions
+- **Permission Middleware**: Backend `requirePermission` middleware enforces module-level permissions on API routes
+- **Frontend Permission Hook**: `usePermissions` hook in `client/src/lib/permissions.ts` provides permission checks for UI
+- **Conditional Button Visibility**: Master pages (customers, rooms, editors, projects) now hide Add/Edit/Delete buttons based on user permissions
+- **User Rights Page Fix**: Changed permission loading from useState to useEffect to properly pre-check existing permissions from database
+- **Module-to-Section Mapping**: Both frontend and backend use consistent mapping between API modules (lowercase) and database module/section names (capitalized)
+- **Role Permission Matrix**:
+  - admin: Full access to all modules
+  - gst: View and edit most modules, no delete access, no chalan/user management
+  - non_gst: View-only for most modules, can create bookings and leaves
+  - custom: All permissions fetched from user_module_access table
+
+### Login Credentials (Updated)
+- PRISM Studios: username="admin", PIN="admin123"
