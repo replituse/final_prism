@@ -4,7 +4,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // Enums
-export const userRoleEnum = pgEnum("user_role", ["admin", "gst", "non_gst", "custom"]);
+export const userRoleEnum = pgEnum("user_role", ["admin", "gst", "non_gst", "account", "custom"]);
 export const projectTypeEnum = pgEnum("project_type", ["movie", "serial", "web_series", "ad", "teaser", "trilogy"]);
 export const roomTypeEnum = pgEnum("room_type", ["sound", "music", "vfx", "client_office", "editing", "dubbing", "mixing"]);
 export const editorTypeEnum = pgEnum("editor_type", ["video", "audio", "vfx", "colorist", "di"]);

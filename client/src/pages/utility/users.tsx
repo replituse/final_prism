@@ -45,6 +45,7 @@ const ROLES = [
   { value: "admin", label: "Admin", description: "Full access to all modules" },
   { value: "gst", label: "GST", description: "GST billing access" },
   { value: "non_gst", label: "Non-GST", description: "Non-GST billing access" },
+  { value: "account", label: "Account", description: "Booking, Chalan entry & revision access" },
   { value: "custom", label: "Custom", description: "No access by default, set via User Rights" },
 ];
 
@@ -55,7 +56,7 @@ const createUserFormSchema = z.object({
   mobile: z.string().optional(),
   password: z.string().min(4, "Password must be at least 4 characters"),
   securityPin: z.string().min(4, "Security PIN must be at least 4 characters"),
-  role: z.enum(["admin", "gst", "non_gst", "custom"]),
+  role: z.enum(["admin", "gst", "non_gst", "account", "custom"]),
   companyId: z.string().optional(),
   isActive: z.boolean().default(true),
 });
@@ -71,7 +72,7 @@ const editUserFormSchema = z.object({
   securityPin: z.string().optional().refine((val) => !val || val.length >= 4, {
     message: "Security PIN must be at least 4 characters if provided",
   }),
-  role: z.enum(["admin", "gst", "non_gst", "custom"]),
+  role: z.enum(["admin", "gst", "non_gst", "account", "custom"]),
   companyId: z.string().optional(),
   isActive: z.boolean().default(true),
 });
@@ -552,28 +553,27 @@ export default function UsersPage() {
                         Password {editingUser ? "(leave blank to keep)" : "*"}
                       </FormLabel>
                       <FormControl>
-                        <div className="relative">
+                        <div className="relative flex items-center">
                           <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                           <Input
                             type={showPassword ? "text" : "password"}
-                            className="pl-9 pr-9"
+                            className="pl-9 pr-10"
                             placeholder="Enter password"
                             data-testid="input-password"
                             {...field}
                           />
-                          <Button
+                          <button
                             type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                             onClick={() => setShowPassword(!showPassword)}
+                            tabIndex={-1}
                           >
                             {showPassword ? (
                               <EyeOff className="h-4 w-4" />
                             ) : (
                               <Eye className="h-4 w-4" />
                             )}
-                          </Button>
+                          </button>
                         </div>
                       </FormControl>
                       <FormMessage />
@@ -590,28 +590,27 @@ export default function UsersPage() {
                         Security PIN {editingUser ? "(leave blank to keep)" : "*"}
                       </FormLabel>
                       <FormControl>
-                        <div className="relative">
+                        <div className="relative flex items-center">
                           <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                           <Input
                             type={showPin ? "text" : "password"}
-                            className="pl-9 pr-9"
+                            className="pl-9 pr-10"
                             placeholder="Enter PIN"
                             data-testid="input-pin"
                             {...field}
                           />
-                          <Button
+                          <button
                             type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                             onClick={() => setShowPin(!showPin)}
+                            tabIndex={-1}
                           >
                             {showPin ? (
                               <EyeOff className="h-4 w-4" />
                             ) : (
                               <Eye className="h-4 w-4" />
                             )}
-                          </Button>
+                          </button>
                         </div>
                       </FormControl>
                       <FormMessage />

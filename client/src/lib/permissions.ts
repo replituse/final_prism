@@ -2,7 +2,7 @@ import { useAuth } from "./auth-context";
 import { useQuery } from "@tanstack/react-query";
 import type { UserModuleAccess } from "@shared/schema";
 
-export type UserRole = "admin" | "gst" | "non_gst" | "custom";
+export type UserRole = "admin" | "gst" | "non_gst" | "account" | "custom";
 
 export type Module = 
   | "booking" 
@@ -57,6 +57,18 @@ const rolePermissions: Record<UserRole, Record<Module, ModulePermissions>> = {
     rooms: { canView: true, canCreate: false, canEdit: false, canDelete: false },
     editors: { canView: true, canCreate: false, canEdit: false, canDelete: false },
     reports: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    users: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    "user-rights": { canView: false, canCreate: false, canEdit: false, canDelete: false },
+  },
+  account: {
+    booking: { canView: true, canCreate: true, canEdit: true, canDelete: false },
+    leaves: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    chalan: { canView: true, canCreate: true, canEdit: true, canDelete: false },
+    customers: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    projects: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    rooms: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    editors: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    reports: { canView: false, canCreate: false, canEdit: false, canDelete: false },
     users: { canView: false, canCreate: false, canEdit: false, canDelete: false },
     "user-rights": { canView: false, canCreate: false, canEdit: false, canDelete: false },
   },
