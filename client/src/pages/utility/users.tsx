@@ -45,6 +45,7 @@ const ROLES = [
   { value: "admin", label: "Admin", description: "Full access to all modules" },
   { value: "gst", label: "GST", description: "GST billing access" },
   { value: "non_gst", label: "Non-GST", description: "Non-GST billing access" },
+  { value: "custom", label: "Custom", description: "No access by default, set via User Rights" },
 ];
 
 const createUserFormSchema = z.object({
@@ -54,7 +55,7 @@ const createUserFormSchema = z.object({
   mobile: z.string().optional(),
   password: z.string().min(4, "Password must be at least 4 characters"),
   securityPin: z.string().min(4, "Security PIN must be at least 4 characters"),
-  role: z.enum(["admin", "gst", "non_gst"]),
+  role: z.enum(["admin", "gst", "non_gst", "custom"]),
   companyId: z.string().optional(),
   isActive: z.boolean().default(true),
 });
@@ -70,7 +71,7 @@ const editUserFormSchema = z.object({
   securityPin: z.string().optional().refine((val) => !val || val.length >= 4, {
     message: "Security PIN must be at least 4 characters if provided",
   }),
-  role: z.enum(["admin", "gst", "non_gst"]),
+  role: z.enum(["admin", "gst", "non_gst", "custom"]),
   companyId: z.string().optional(),
   isActive: z.boolean().default(true),
 });
@@ -285,6 +286,8 @@ export default function UsersPage() {
         return <Badge variant="secondary">GST</Badge>;
       case "non_gst":
         return <Badge variant="outline">Non-GST</Badge>;
+      case "custom":
+        return <Badge variant="outline">Custom</Badge>;
       default:
         return null;
     }
