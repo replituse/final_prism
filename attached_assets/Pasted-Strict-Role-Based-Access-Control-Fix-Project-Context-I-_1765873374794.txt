@@ -1,0 +1,219 @@
+Strict Role-Based Access Control Fix
+🔹 Project Context
+
+I have an existing software project with:
+
+Booking calendar
+
+Masters
+
+Operations
+
+Reports
+
+User Management & User Rights
+
+UI and core flows are already implemented and must NOT be redesigned.
+
+Your task is to fix permission enforcement bugs so that users only see and access exactly what the admin allows.
+
+❗ Current Problem (From Uploaded Images)
+
+Example user: pk (Custom Role)
+
+Admin has configured:
+
+Masters
+
+Customer Master → View only
+
+Room Master → Create only
+
+No permission given for:
+
+Reports
+
+Booking dashboard
+
+Other Masters
+
+Edit/Delete anywhere
+
+❌ Actual Behavior (Bug)
+
+pk user:
+
+Can access Reports section fully
+
+Can see Booking Calendar dashboard
+
+Has extra permissions not granted
+
+View/Create/Edit/Delete rules are NOT enforced properly
+
+🎯 Expected Behavior (Must Be Implemented)
+✅ 1. Module-Level Access (Strict)
+
+If a user does NOT have view permission for a module:
+
+Module must be hidden from sidebar
+
+Direct URL access must be blocked (403)
+
+Example:
+
+If Reports → view = false
+→ Reports menu must NOT appear
+→ /reports/* APIs must reject access
+
+✅ 2. Action-Level Access (Strict)
+
+Each module must obey View / Create / Edit / Delete independently.
+
+Examples:
+
+Customer Master:
+
+View = ✅ → list visible
+
+Create/Edit/Delete = ❌ → buttons hidden + API blocked
+
+Room Master:
+
+Create = ✅
+
+View/Edit/Delete = ❌
+
+Only “Add Room” allowed
+
+No list, no edit, no delete
+
+✅ 3. Booking Dashboard Access Control
+
+Booking Calendar must be visible ONLY if:
+
+Booking → View permission = true
+
+Otherwise:
+
+Dashboard must be hidden
+
+API routes blocked
+
+✅ 4. Reports Section Fix
+
+Reports must follow permissions strictly:
+
+Conflict Report
+
+Booking Report
+
+Editor Report
+
+Chalan Report
+
+Each report:
+
+Visible only if view = true
+
+No report should be visible by default
+
+🔐 Permission System Rules (VERY IMPORTANT)
+
+NO hard-coded permissions
+
+gst / nongst / custom must behave the same
+
+All permissions come from User Rights table
+
+Single Source of Truth
+
+Permissions stored in DB
+
+Used by:
+
+Sidebar rendering
+
+Button visibility
+
+Backend API authorization
+
+Backend Enforcement (Mandatory)
+
+Even if UI hides buttons:
+
+APIs must still validate permissions
+
+Return proper 403 Forbidden if access is denied
+
+🧠 Implementation Requirements
+Frontend
+
+Build a centralized permission helper:
+
+canView(module)
+
+canCreate(module)
+
+canEdit(module)
+
+canDelete(module)
+
+Use it for:
+
+Sidebar menu rendering
+
+Button visibility
+
+Page access guards
+
+Backend
+
+Add middleware like:
+
+checkPermission(module, action)
+
+
+Apply it to:
+
+All CRUD APIs
+
+Reports APIs
+
+Booking APIs
+
+🧪 Test Scenarios (Must Pass)
+
+Custom user with:
+
+Customer Master → View only
+
+Room Master → Create only
+
+No Report permissions
+
+✅ Expected:
+
+Sidebar shows:
+
+Customer Master
+
+Room Master
+
+Reports NOT visible
+
+Booking dashboard NOT visible
+
+No Edit/Delete anywhere
+
+Direct API calls without permission → blocked
+
+⚠️ Constraints
+
+❌ Do NOT redesign UI
+
+❌ Do NOT change database type
+
+❌ Do NOT break existing flows
+
+✅ Fix logic only

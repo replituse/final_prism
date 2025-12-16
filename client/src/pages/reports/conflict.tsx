@@ -19,11 +19,12 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Header } from "@/components/header";
 import { EmptyState } from "@/components/empty-state";
 import { BookingForm } from "@/components/booking-form";
+import { PagePermissionGuard } from "@/components/permission-guard";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { BookingWithRelations, Room, Editor } from "@shared/schema";
 
-export default function ConflictReportPage() {
+function ConflictReportContent() {
   const { toast } = useToast();
   const [fromDate, setFromDate] = useState(format(startOfMonth(new Date()), "yyyy-MM-dd"));
   const [toDate, setToDate] = useState(format(endOfMonth(new Date()), "yyyy-MM-dd"));
@@ -342,5 +343,13 @@ export default function ConflictReportPage() {
         defaultDate={editingBooking ? new Date(editingBooking.bookingDate) : undefined}
       />
     </div>
+  );
+}
+
+export default function ConflictReportPage() {
+  return (
+    <PagePermissionGuard module="reports">
+      <ConflictReportContent />
+    </PagePermissionGuard>
   );
 }

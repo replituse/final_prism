@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/table";
 import { Header } from "@/components/header";
 import { EmptyState } from "@/components/empty-state";
+import { PagePermissionGuard } from "@/components/permission-guard";
 import type { Editor, BookingWithRelations } from "@shared/schema";
 
 interface EditorReport {
@@ -34,7 +35,7 @@ interface EditorReport {
   projectCount: number;
 }
 
-export default function EditorReportPage() {
+function EditorReportContent() {
   const [fromDate, setFromDate] = useState(format(startOfMonth(new Date()), "yyyy-MM-dd"));
   const [toDate, setToDate] = useState(format(endOfMonth(new Date()), "yyyy-MM-dd"));
   const [selectedEditor, setSelectedEditor] = useState<string>("all");
@@ -276,5 +277,14 @@ export default function EditorReportPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+
+export default function EditorReportPage() {
+  return (
+    <PagePermissionGuard module="reports">
+      <EditorReportContent />
+    </PagePermissionGuard>
   );
 }

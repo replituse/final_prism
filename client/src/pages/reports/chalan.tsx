@@ -24,10 +24,11 @@ import { Header } from "@/components/header";
 import { DataTable, Column } from "@/components/data-table";
 import { EmptyState } from "@/components/empty-state";
 import { ChalanInvoice } from "@/components/chalan-invoice";
+import { PagePermissionGuard } from "@/components/permission-guard";
 import { useLocation } from "wouter";
 import type { ChalanWithItems, Customer } from "@shared/schema";
 
-export default function ChalanReportPage() {
+function ChalanReportContent() {
   const [, navigate] = useLocation();
   const [fromDate, setFromDate] = useState(format(startOfMonth(new Date()), "yyyy-MM-dd"));
   const [toDate, setToDate] = useState(format(endOfMonth(new Date()), "yyyy-MM-dd"));
@@ -318,5 +319,14 @@ export default function ChalanReportPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+
+export default function ChalanReportPage() {
+  return (
+    <PagePermissionGuard module="reports">
+      <ChalanReportContent />
+    </PagePermissionGuard>
   );
 }

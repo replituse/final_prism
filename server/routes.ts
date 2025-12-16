@@ -608,7 +608,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
   });
 
   // Bookings routes
-  app.get("/api/bookings", async (req, res) => {
+  app.get("/api/bookings", requirePermission("booking", "canView"), async (req, res) => {
     try {
       const filters = {
         from: req.query.from as string | undefined,
@@ -625,7 +625,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  app.get("/api/bookings/:id", async (req, res) => {
+  app.get("/api/bookings/:id", requirePermission("booking", "canView"), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const booking = await storage.getBooking(id);
@@ -679,7 +679,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  app.post("/api/bookings", async (req, res) => {
+  app.post("/api/bookings", requirePermission("booking", "canCreate"), async (req, res) => {
     try {
       const { repeatDays, ...bookingData } = req.body;
       const data = insertBookingSchema.parse(bookingData);
@@ -703,7 +703,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  app.patch("/api/bookings/:id", async (req, res) => {
+  app.patch("/api/bookings/:id", requirePermission("booking", "canEdit"), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       
@@ -726,7 +726,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  app.post("/api/bookings/:id/cancel", async (req, res) => {
+  app.post("/api/bookings/:id/cancel", requirePermission("booking", "canDelete"), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const { reason } = req.body;
@@ -744,7 +744,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
   });
 
   // Editor Leaves routes
-  app.get("/api/editor-leaves", async (req, res) => {
+  app.get("/api/editor-leaves", requirePermission("leaves", "canView"), async (req, res) => {
     try {
       const editorId = req.query.editorId ? parseInt(req.query.editorId as string) : undefined;
       const leaves = await storage.getEditorLeaves(editorId);
@@ -754,7 +754,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  app.post("/api/editor-leaves", async (req, res) => {
+  app.post("/api/editor-leaves", requirePermission("leaves", "canCreate"), async (req, res) => {
     try {
       const data = insertEditorLeaveSchema.parse(req.body);
       const leave = await storage.createEditorLeave(data);
@@ -764,7 +764,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  app.patch("/api/editor-leaves/:id", async (req, res) => {
+  app.patch("/api/editor-leaves/:id", requirePermission("leaves", "canEdit"), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const leave = await storage.updateEditorLeave(id, req.body);
@@ -777,7 +777,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  app.delete("/api/editor-leaves/:id", async (req, res) => {
+  app.delete("/api/editor-leaves/:id", requirePermission("leaves", "canDelete"), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteEditorLeave(id);
@@ -788,7 +788,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
   });
 
   // Chalans routes
-  app.get("/api/chalans", async (req, res) => {
+  app.get("/api/chalans", requirePermission("chalan", "canView"), async (req, res) => {
     try {
       const filters = {
         from: req.query.from as string | undefined,
@@ -802,7 +802,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  app.get("/api/chalans/:id", async (req, res) => {
+  app.get("/api/chalans/:id", requirePermission("chalan", "canView"), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const chalan = await storage.getChalan(id);
@@ -825,7 +825,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  app.post("/api/chalans", async (req, res) => {
+  app.post("/api/chalans", requirePermission("chalan", "canCreate"), async (req, res) => {
     try {
       const { items, ...chalanData } = req.body;
       const data = insertChalanSchema.parse(chalanData);
@@ -905,7 +905,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  app.patch("/api/chalans/:id", async (req, res) => {
+  app.patch("/api/chalans/:id", requirePermission("chalan", "canEdit"), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       
@@ -945,7 +945,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  app.delete("/api/chalans/:id", async (req, res) => {
+  app.delete("/api/chalans/:id", requirePermission("chalan", "canDelete"), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.cancelChalan(id, "Deleted");
@@ -956,7 +956,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
   });
 
   // Reports routes
-  app.get("/api/reports/conflicts", async (req, res) => {
+  app.get("/api/reports/conflicts", requirePermission("reports", "canView"), async (req, res) => {
     try {
       const from = req.query.from as string;
       const to = req.query.to as string;
@@ -974,7 +974,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  app.get("/api/reports/editors", async (req, res) => {
+  app.get("/api/reports/editors", requirePermission("reports", "canView"), async (req, res) => {
     try {
       const from = req.query.from as string;
       const to = req.query.to as string;

@@ -126,21 +126,21 @@ function filterSectionsByRoleAndPermissions(
   canViewModule: (module: Module) => boolean
 ): MenuSection[] {
   return sections
-    .filter(section => {
-      if (userRole === "custom") {
-        if (section.module) {
-          return canViewModule(section.module);
-        }
-        return true;
-      }
-      if (!section.roles) return true;
-      return section.roles.includes(userRole);
-    })
     .map(section => ({
       ...section,
       items: filterItemsByRoleAndPermissions(section.items, userRole, canViewModule),
     }))
-    .filter(section => section.items.length > 0);
+    .filter(section => {
+      // For custom roles, only show sections that have accessible items
+      if (userRole === "custom") {
+        return section.items.length > 0;
+      }
+      // For other roles, check if the section is allowed for this role
+      if (section.roles && !section.roles.includes(userRole)) {
+        return false;
+      }
+      return section.items.length > 0;
+    });
 }
 
 function SidebarNavGroup({

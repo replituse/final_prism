@@ -19,6 +19,7 @@ import { Separator } from "@/components/ui/separator";
 import { Header } from "@/components/header";
 import { DataTable, Column } from "@/components/data-table";
 import { EmptyState } from "@/components/empty-state";
+import { PagePermissionGuard } from "@/components/permission-guard";
 import type { BookingWithRelations, Customer, Room } from "@shared/schema";
 
 const STATUS_OPTIONS = [
@@ -29,7 +30,7 @@ const STATUS_OPTIONS = [
   { value: "cancelled", label: "Cancelled" },
 ];
 
-export default function BookingReportPage() {
+function BookingReportContent() {
   const [fromDate, setFromDate] = useState(format(startOfMonth(new Date()), "yyyy-MM-dd"));
   const [toDate, setToDate] = useState(format(endOfMonth(new Date()), "yyyy-MM-dd"));
   const [selectedCustomer, setSelectedCustomer] = useState<string>("all");
@@ -307,5 +308,14 @@ export default function BookingReportPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+
+export default function BookingReportPage() {
+  return (
+    <PagePermissionGuard module="reports">
+      <BookingReportContent />
+    </PagePermissionGuard>
   );
 }

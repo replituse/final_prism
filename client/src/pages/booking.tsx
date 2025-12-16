@@ -57,6 +57,8 @@ import { Header } from "@/components/header";
 import { EmptyState } from "@/components/empty-state";
 import { BookingCard } from "@/components/booking-card";
 import { BookingForm } from "@/components/booking-form";
+import { PagePermissionGuard } from "@/components/permission-guard";
+import { usePermissions } from "@/lib/permissions";
 import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -73,7 +75,8 @@ const YEARS = Array.from({ length: 11 }, (_, i) => 2020 + i);
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-export default function BookingPage() {
+function BookingContent() {
+  const { canCreate, canEdit, canDelete } = usePermissions();
   const [, navigate] = useLocation();
   const { selectedDate, setSelectedDate } = useAuth();
   const { toast } = useToast();
@@ -386,10 +389,12 @@ export default function BookingPage() {
               <CalendarDays className="h-4 w-4 mr-2" />
               Day View
             </Button>
-            <Button onClick={() => handleNewBooking()} data-testid="button-schedule-booking">
-              <Plus className="h-4 w-4 mr-2" />
-              Schedule Booking
-            </Button>
+            {canCreate("booking") && (
+              <Button onClick={() => handleNewBooking()} data-testid="button-schedule-booking">
+                <Plus className="h-4 w-4 mr-2" />
+                Schedule Booking
+              </Button>
+            )}
           </div>
         </div>
 
@@ -611,5 +616,14 @@ export default function BookingPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+
+export default function BookingPage() {
+  return (
+    <PagePermissionGuard module="booking">
+      <BookingContent />
+    </PagePermissionGuard>
   );
 }

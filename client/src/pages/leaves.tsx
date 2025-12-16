@@ -36,6 +36,8 @@ import { Badge } from "@/components/ui/badge";
 import { Header } from "@/components/header";
 import { DataTable, Column } from "@/components/data-table";
 import { EmptyState } from "@/components/empty-state";
+import { PagePermissionGuard, PermissionGuard } from "@/components/permission-guard";
+import { usePermissions } from "@/lib/permissions";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { EditorLeave, Editor } from "@shared/schema";
@@ -51,7 +53,8 @@ type LeaveFormValues = z.infer<typeof leaveFormSchema>;
 
 type LeaveWithEditor = EditorLeave & { editor?: Editor };
 
-export default function LeavesPage() {
+function LeavesContent() {
+  const { canCreate, canEdit, canDelete } = usePermissions();
   const { toast } = useToast();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLeave, setEditingLeave] = useState<LeaveWithEditor | null>(null);
@@ -492,5 +495,14 @@ export default function LeavesPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+
+export default function LeavesPage() {
+  return (
+    <PagePermissionGuard module="leaves">
+      <LeavesContent />
+    </PagePermissionGuard>
   );
 }
