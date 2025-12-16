@@ -1,0 +1,224 @@
+✅ Professional Replit Prompt – Chalan Bug Fix + Dynamic Role & User Rights
+🔹 Project Context
+
+I already have an existing production-style software project with completed UI, modules, and workflows.
+
+Your task is to fix specific bugs and improve role & permission management, while following these rules:
+
+❌ Do NOT redesign UI
+
+❌ Do NOT change existing workflows
+
+❌ Do NOT hard-code permissions for any role
+
+✅ Fix backend & frontend logic only
+
+✅ Permissions must be fully dynamic
+
+✅ MySQL must be used strictly
+
+🔐 Database Rules (Strict)
+
+Use MySQL only
+
+Use existing MySQL setup (mysql2 / ORM already in project).
+
+No SQLite / Mongo / Prisma DB switch.
+
+Replit Environment
+
+Inside Replit:
+
+Auto-create database & tables only for testing.
+
+Use .env variables:
+
+DB_HOST
+DB_USER
+DB_PASSWORD
+DB_NAME
+
+
+Keep DB config centralized so I can easily replace credentials after downloading.
+
+Do NOT break existing tables
+
+Only add tables/columns if required for permissions.
+
+No destructive schema changes.
+
+🐞 BUG FIX – Chalan Creation Error
+1️⃣ Chalan Entry Error (“like is not defined”)
+
+Problem (from uploaded image):
+
+When creating Chalan from Booking, system throws:
+
+Error creating chalan: "like is not defined"
+
+
+Chalan is not created.
+
+Fix Required:
+
+Identify backend query using LIKE incorrectly or without import/ORM operator.
+
+Fix query safely:
+
+If Sequelize → use Op.like
+
+If raw SQL → use proper LIKE ? syntax
+
+Ensure:
+
+Chalan Date is correctly parsed (YYYY-MM-DD)
+
+Items, quantity, rate, notes save correctly
+
+Do NOT change Chalan UI or flow.
+
+👥 Dynamic Role & Permission System (CORE REQUIREMENT)
+2️⃣ Add New Role: custom
+User Management
+
+Add custom role option along with:
+
+admin
+
+gst
+
+nongst
+
+When creating a user with role = custom:
+
+User should be created with NO access by default
+
+No module should be visible initially
+
+3️⃣ User Rights – Fully Dynamic Access Control
+Current Problems
+
+Checkboxes are not reflecting saved permissions
+
+gst / nongst permissions are hard-coded
+
+Admin cannot fully control access dynamically
+
+✅ Required Behavior (Very Important)
+A. Permission Source
+
+ALL permissions must come from User Rights table
+
+NO role (admin / gst / nongst / custom) should have fixed permissions in code
+
+B. User Rights Screen
+
+When admin opens User Rights Management:
+
+Select a user or role
+
+System should:
+
+Fetch permissions from DB
+
+Auto-check corresponding checkboxes
+
+Admin can:
+
+Grant / remove permissions dynamically
+
+Save changes
+
+C. Permission Granularity
+
+Permissions must support:
+
+Module level (Booking, Chalan, Reports, Masters, etc.)
+
+Action level:
+
+View
+
+Create
+
+Edit
+
+Delete
+
+Example Scenarios (Must Work):
+
+Custom user:
+
+✅ View Booking
+
+❌ Create / Edit / Delete Booking
+
+GST user:
+
+❌ Edit Chalan
+
+✅ View Booking Report
+
+Non-GST user:
+
+✅ View Reports only
+
+D. Enforcement (Frontend + Backend)
+
+Frontend
+
+Hide buttons user has no access to
+
+Disable routes if view permission is missing
+
+Backend (Mandatory)
+
+Validate permissions before every API action
+
+Even if user bypasses UI → API must block unauthorized access
+
+🧩 Suggested Permission Structure (If Needed)
+
+You may add a table like:
+
+permissions
+- id
+- role OR user_id
+- module
+- can_view
+- can_create
+- can_edit
+- can_delete
+
+
+But do NOT change existing logic unless necessary.
+
+🎯 Final Expectations
+
+✅ Chalan creation works without error
+
+✅ Custom role works with zero access by default
+
+✅ Admin can dynamically control:
+
+custom
+
+gst
+
+nongst
+
+✅ User Rights checkboxes reflect saved permissions
+
+✅ Permissions enforced in UI and backend
+
+✅ MySQL used strictly inside Replit
+
+⚠️ IMPORTANT
+
+Before finalizing:
+
+Test Chalan creation
+
+Test role change impact instantly
+
+Test restricted API access via role permissions

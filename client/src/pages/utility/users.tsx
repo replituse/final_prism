@@ -550,8 +550,10 @@ export default function UsersPage() {
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                           <Input
                             type={showPassword ? "text" : "password"}
+                            className="pl-9 pr-9"
                             placeholder="Enter password"
                             data-testid="input-password"
                             {...field}
@@ -586,8 +588,10 @@ export default function UsersPage() {
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                           <Input
                             type={showPin ? "text" : "password"}
+                            className="pl-9 pr-9"
                             placeholder="Enter PIN"
                             data-testid="input-pin"
                             {...field}

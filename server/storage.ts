@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { eq, and, gte, lte, sql, desc, or, inArray, asc } from "drizzle-orm";
+import { eq, and, gte, lte, sql, desc, or, inArray, asc, like } from "drizzle-orm";
 import {
   companies,
   users,
