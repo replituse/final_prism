@@ -110,6 +110,10 @@ export default function UsersPage() {
   const [showPin, setShowPin] = useState(false);
   const [addCompanyDialogOpen, setAddCompanyDialogOpen] = useState(false);
   const [showCompanyPassword, setShowCompanyPassword] = useState(false);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [viewingUser, setViewingUser] = useState<(UserType & { company?: Company }) | null>(null);
+  const [viewShowPassword, setViewShowPassword] = useState(false);
+  const [viewShowPin, setViewShowPin] = useState(false);
 
   const isAdmin = user?.role === "admin";
 
@@ -314,6 +318,31 @@ export default function UsersPage() {
     setDialogOpen(true);
   };
 
+  const handleOpenViewDialog = (userRow: UserType & { company?: Company }) => {
+    setViewingUser(userRow);
+    setViewShowPassword(false);
+    setViewShowPin(false);
+    setViewDialogOpen(true);
+  };
+
+  const handleCloseViewDialog = () => {
+    setViewDialogOpen(false);
+    setViewingUser(null);
+    setViewShowPassword(false);
+    setViewShowPin(false);
+  };
+
+  const { data: sensitiveData } = useQuery<{ password: string; securityPin: string }>({
+    queryKey: ["/api/users", viewingUser?.id, "sensitive"],
+    queryFn: async () => {
+      if (!viewingUser?.id) throw new Error("No user selected");
+      const res = await fetch(`/api/users/${viewingUser.id}/sensitive`, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch sensitive data");
+      return res.json();
+    },
+    enabled: viewDialogOpen && !!viewingUser?.id && isAdmin,
+  });
+
   const handleCloseDialog = () => {
     setDialogOpen(false);
     setEditingUser(null);
@@ -402,7 +431,7 @@ export default function UsersPage() {
       key: "isActive",
       header: "Status",
       cell: (row) => (
-        permissions.canEdit("users") ? (
+        isAdmin ? (
           <div 
             className="flex items-center gap-2"
             onClick={(e) => e.stopPropagation()}
@@ -445,7 +474,7 @@ export default function UsersPage() {
           />
         ) : (
           <div className="space-y-4">
-            {permissions.canCreate("users") && (
+            {isAdmin && (
               <div className="flex justify-end">
                 <Button onClick={() => handleOpenDialog()} data-testid="button-add-user">
                   <Plus className="h-4 w-4 mr-2" />
@@ -459,10 +488,18 @@ export default function UsersPage() {
               data={users}
               isLoading={isLoading}
               searchPlaceholder="Search users..."
-              onRowClick={handleOpenDialog}
+              onRowClick={(row) => handleOpenViewDialog(row)}
               actions={(row) => (
                 <div className="flex items-center gap-1">
-                  {permissions.canEdit("users") && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleOpenViewDialog(row)}
+                    data-testid={`button-view-user-${row.id}`}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  {isAdmin && (
                     <Button
                       variant="ghost"
                       size="icon"
@@ -472,7 +509,7 @@ export default function UsersPage() {
                       <Pencil className="h-4 w-4" />
                     </Button>
                   )}
-                  {permissions.canDelete("users") && (
+                  {isAdmin && (
                     <Button
                       variant="ghost"
                       size="icon"
@@ -919,6 +956,146 @@ export default function UsersPage() {
               </DialogFooter>
             </form>
           </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* View User Modal */}
+      <Dialog open={viewDialogOpen} onOpenChange={handleCloseViewDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <User className="h-5 w-5" />
+              User Details
+            </DialogTitle>
+            <DialogDescription>
+              View user information{isAdmin ? " and credentials" : ""}.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {viewingUser && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-4 pb-4 border-b">
+                <Avatar className="h-16 w-16">
+                  <AvatarFallback className="text-lg">
+                    {getInitials(viewingUser.fullName, viewingUser.username)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col">
+                  <span className="font-semibold text-lg">
+                    {viewingUser.fullName || viewingUser.username}
+                  </span>
+                  <span className="text-sm text-muted-foreground">@{viewingUser.username}</span>
+                  {getRoleBadge(viewingUser.role)}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <span className="text-sm text-muted-foreground">Email</span>
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <span>{viewingUser.email || "-"}</span>
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-sm text-muted-foreground">Mobile</span>
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <span>{viewingUser.mobile || "-"}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <span className="text-sm text-muted-foreground">Company</span>
+                  <div className="flex items-center gap-2">
+                    <Building2 className="h-4 w-4 text-muted-foreground" />
+                    <span>{viewingUser.company?.name || "-"}</span>
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-sm text-muted-foreground">Status</span>
+                  <Badge variant={viewingUser.isActive ? "default" : "secondary"}>
+                    {viewingUser.isActive ? "Active" : "Inactive"}
+                  </Badge>
+                </div>
+              </div>
+
+              {isAdmin && sensitiveData && (
+                <div className="pt-4 border-t space-y-4">
+                  <h4 className="font-medium text-sm text-muted-foreground">Credentials (Admin Only)</h4>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <span className="text-sm text-muted-foreground">Password</span>
+                      <div className="flex items-center gap-2">
+                        <Lock className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-mono" data-testid="text-user-password">
+                          {viewShowPassword ? sensitiveData.password : "********"}
+                        </span>
+                        <button
+                          type="button"
+                          className="text-muted-foreground hover:text-foreground"
+                          onClick={() => setViewShowPassword(!viewShowPassword)}
+                          data-testid="button-toggle-view-password"
+                        >
+                          {viewShowPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-sm text-muted-foreground">Security PIN</span>
+                      <div className="flex items-center gap-2">
+                        <Lock className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-mono" data-testid="text-user-pin">
+                          {viewShowPin ? sensitiveData.securityPin : "********"}
+                        </span>
+                        <button
+                          type="button"
+                          className="text-muted-foreground hover:text-foreground"
+                          onClick={() => setViewShowPin(!viewShowPin)}
+                          data-testid="button-toggle-view-pin"
+                        >
+                          {viewShowPin ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <DialogFooter className="gap-2 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={handleCloseViewDialog}
+                  data-testid="button-close-view"
+                >
+                  Close
+                </Button>
+                {isAdmin && (
+                  <Button
+                    onClick={() => {
+                      handleCloseViewDialog();
+                      handleOpenDialog(viewingUser);
+                    }}
+                    data-testid="button-edit-from-view"
+                  >
+                    <Pencil className="h-4 w-4 mr-2" />
+                    Edit User
+                  </Button>
+                )}
+              </DialogFooter>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

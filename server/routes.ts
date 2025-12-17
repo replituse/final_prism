@@ -340,6 +340,20 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
+  // Admin-only endpoint to get user sensitive data (password/securityPin)
+  app.get("/api/users/:id/sensitive", requireRole("admin"), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const user = await storage.getUser(id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.json({ password: user.password, securityPin: user.securityPin });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   app.get("/api/users/:id/profile", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
