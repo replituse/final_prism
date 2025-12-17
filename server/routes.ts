@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { insertCustomerSchema, insertProjectSchema, insertRoomSchema, insertEditorSchema, insertBookingSchema, insertEditorLeaveSchema, insertChalanSchema, insertChalanItemSchema, insertUserSchema, loginSchema, createCompanyWithAdminSchema } from "@shared/schema";
 import { z } from "zod";
 
-type UserRole = "admin" | "gst" | "non_gst" | "custom";
+type UserRole = "admin" | "gst" | "non_gst" | "account" | "custom";
 
 interface AuthenticatedRequest extends Request {
   userId?: number;
@@ -70,6 +70,10 @@ const moduleToSectionMap: Record<string, { module: string; section: string }[]> 
     { module: "Reports", section: "Editor Report" },
     { module: "Reports", section: "Chalan Report" },
   ],
+  "conflict-report": [{ module: "Reports", section: "Conflict Report" }],
+  "booking-report": [{ module: "Reports", section: "Booking Report" }],
+  "editor-report": [{ module: "Reports", section: "Editor Report" }],
+  "chalan-report": [{ module: "Reports", section: "Chalan Report" }],
   users: [{ module: "Utility", section: "User Management" }],
   "user-rights": [{ module: "Utility", section: "User Rights" }],
 };
@@ -84,6 +88,10 @@ const rolePermissions: Record<UserRole, Record<string, { canView: boolean; canCr
     rooms: { canView: true, canCreate: true, canEdit: true, canDelete: true },
     editors: { canView: true, canCreate: true, canEdit: true, canDelete: true },
     reports: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    "conflict-report": { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    "booking-report": { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    "editor-report": { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    "chalan-report": { canView: true, canCreate: false, canEdit: false, canDelete: false },
     users: { canView: true, canCreate: true, canEdit: true, canDelete: true },
     "user-rights": { canView: true, canCreate: true, canEdit: true, canDelete: true },
   },
@@ -96,6 +104,10 @@ const rolePermissions: Record<UserRole, Record<string, { canView: boolean; canCr
     rooms: { canView: true, canCreate: false, canEdit: false, canDelete: false },
     editors: { canView: true, canCreate: false, canEdit: false, canDelete: false },
     reports: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    "conflict-report": { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    "booking-report": { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    "editor-report": { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    "chalan-report": { canView: false, canCreate: false, canEdit: false, canDelete: false },
     users: { canView: false, canCreate: false, canEdit: false, canDelete: false },
     "user-rights": { canView: false, canCreate: false, canEdit: false, canDelete: false },
   },
@@ -108,6 +120,26 @@ const rolePermissions: Record<UserRole, Record<string, { canView: boolean; canCr
     rooms: { canView: true, canCreate: false, canEdit: false, canDelete: false },
     editors: { canView: true, canCreate: false, canEdit: false, canDelete: false },
     reports: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    "conflict-report": { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    "booking-report": { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    "editor-report": { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    "chalan-report": { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    users: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    "user-rights": { canView: false, canCreate: false, canEdit: false, canDelete: false },
+  },
+  account: {
+    booking: { canView: true, canCreate: true, canEdit: true, canDelete: false },
+    leaves: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    chalan: { canView: true, canCreate: true, canEdit: true, canDelete: false },
+    customers: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    projects: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    rooms: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    editors: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    reports: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    "conflict-report": { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    "booking-report": { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    "editor-report": { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    "chalan-report": { canView: true, canCreate: false, canEdit: false, canDelete: false },
     users: { canView: false, canCreate: false, canEdit: false, canDelete: false },
     "user-rights": { canView: false, canCreate: false, canEdit: false, canDelete: false },
   },
@@ -120,6 +152,10 @@ const rolePermissions: Record<UserRole, Record<string, { canView: boolean; canCr
     rooms: { canView: false, canCreate: false, canEdit: false, canDelete: false },
     editors: { canView: false, canCreate: false, canEdit: false, canDelete: false },
     reports: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    "conflict-report": { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    "booking-report": { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    "editor-report": { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    "chalan-report": { canView: false, canCreate: false, canEdit: false, canDelete: false },
     users: { canView: false, canCreate: false, canEdit: false, canDelete: false },
     "user-rights": { canView: false, canCreate: false, canEdit: false, canDelete: false },
   },
@@ -995,7 +1031,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
   });
 
   // Reports routes
-  app.get("/api/reports/conflicts", requirePermission("reports", "canView"), async (req, res) => {
+  app.get("/api/reports/conflicts", requirePermission("conflict-report", "canView"), async (req, res) => {
     try {
       const from = req.query.from as string;
       const to = req.query.to as string;
@@ -1013,7 +1049,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  app.get("/api/reports/editors", requirePermission("reports", "canView"), async (req, res) => {
+  app.get("/api/reports/editors", requirePermission("editor-report", "canView"), async (req, res) => {
     try {
       const from = req.query.from as string;
       const to = req.query.to as string;

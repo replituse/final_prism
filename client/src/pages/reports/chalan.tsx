@@ -325,7 +325,7 @@ function ChalanReportContent() {
 
 export default function ChalanReportPage() {
   return (
-    <PagePermissionGuard module="reports">
+    <PagePermissionGuard module="chalan-report">
       <ChalanReportContent />
     </PagePermissionGuard>
   );

@@ -348,7 +348,7 @@ function ConflictReportContent() {
 
 export default function ConflictReportPage() {
   return (
-    <PagePermissionGuard module="reports">
+    <PagePermissionGuard module="conflict-report">
       <ConflictReportContent />
     </PagePermissionGuard>
   );

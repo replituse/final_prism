@@ -267,7 +267,7 @@ function EditorReportContent() {
 
 export default function EditorReportPage() {
   return (
-    <PagePermissionGuard module="reports">
+    <PagePermissionGuard module="editor-report">
       <EditorReportContent />
     </PagePermissionGuard>
   );

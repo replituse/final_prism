@@ -85,10 +85,10 @@ const mastersItems: MenuItem[] = [
 ];
 
 const reportsItems: MenuItem[] = [
-  { title: "Conflict Report", url: "/reports/conflict", icon: AlertTriangle, module: "reports" },
-  { title: "Booking Report", url: "/reports/booking", icon: CalendarDays, module: "reports" },
-  { title: "Editor Report", url: "/reports/editor", icon: UserCog, module: "reports" },
-  { title: "Chalan Report", url: "/reports/chalan", icon: FileSpreadsheet, roles: ["admin"], module: "reports" },
+  { title: "Conflict Report", url: "/reports/conflict", icon: AlertTriangle, module: "conflict-report" },
+  { title: "Booking Report", url: "/reports/booking", icon: CalendarDays, module: "booking-report" },
+  { title: "Editor Report", url: "/reports/editor", icon: UserCog, module: "editor-report" },
+  { title: "Chalan Report", url: "/reports/chalan", icon: FileSpreadsheet, module: "chalan-report" },
 ];
 
 const utilityItems: MenuItem[] = [
@@ -99,7 +99,7 @@ const utilityItems: MenuItem[] = [
 const menuSections: MenuSection[] = [
   { label: "Operations", items: operationsItems },
   { label: "Masters", items: mastersItems, roles: ["admin", "gst"] },
-  { label: "Reports", items: reportsItems, roles: ["admin"], module: "reports" },
+  { label: "Reports", items: reportsItems },
   { label: "Utility", items: utilityItems, roles: ["admin"] },
 ];
 

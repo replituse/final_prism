@@ -12,7 +12,11 @@ export type Module =
   | "projects" 
   | "rooms" 
   | "editors" 
-  | "reports" 
+  | "reports"
+  | "conflict-report"
+  | "booking-report"
+  | "editor-report"
+  | "chalan-report"
   | "users" 
   | "user-rights";
 
@@ -33,6 +37,10 @@ const rolePermissions: Record<UserRole, Record<Module, ModulePermissions>> = {
     rooms: { canView: true, canCreate: true, canEdit: true, canDelete: true },
     editors: { canView: true, canCreate: true, canEdit: true, canDelete: true },
     reports: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    "conflict-report": { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    "booking-report": { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    "editor-report": { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    "chalan-report": { canView: true, canCreate: false, canEdit: false, canDelete: false },
     users: { canView: true, canCreate: true, canEdit: true, canDelete: true },
     "user-rights": { canView: true, canCreate: true, canEdit: true, canDelete: true },
   },
@@ -45,6 +53,10 @@ const rolePermissions: Record<UserRole, Record<Module, ModulePermissions>> = {
     rooms: { canView: true, canCreate: false, canEdit: false, canDelete: false },
     editors: { canView: true, canCreate: false, canEdit: false, canDelete: false },
     reports: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    "conflict-report": { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    "booking-report": { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    "editor-report": { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    "chalan-report": { canView: false, canCreate: false, canEdit: false, canDelete: false },
     users: { canView: false, canCreate: false, canEdit: false, canDelete: false },
     "user-rights": { canView: false, canCreate: false, canEdit: false, canDelete: false },
   },
@@ -57,6 +69,10 @@ const rolePermissions: Record<UserRole, Record<Module, ModulePermissions>> = {
     rooms: { canView: true, canCreate: false, canEdit: false, canDelete: false },
     editors: { canView: true, canCreate: false, canEdit: false, canDelete: false },
     reports: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    "conflict-report": { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    "booking-report": { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    "editor-report": { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    "chalan-report": { canView: false, canCreate: false, canEdit: false, canDelete: false },
     users: { canView: false, canCreate: false, canEdit: false, canDelete: false },
     "user-rights": { canView: false, canCreate: false, canEdit: false, canDelete: false },
   },
@@ -69,6 +85,10 @@ const rolePermissions: Record<UserRole, Record<Module, ModulePermissions>> = {
     rooms: { canView: true, canCreate: false, canEdit: false, canDelete: false },
     editors: { canView: true, canCreate: false, canEdit: false, canDelete: false },
     reports: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    "conflict-report": { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    "booking-report": { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    "editor-report": { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    "chalan-report": { canView: true, canCreate: false, canEdit: false, canDelete: false },
     users: { canView: false, canCreate: false, canEdit: false, canDelete: false },
     "user-rights": { canView: false, canCreate: false, canEdit: false, canDelete: false },
   },
@@ -81,6 +101,10 @@ const rolePermissions: Record<UserRole, Record<Module, ModulePermissions>> = {
     rooms: { canView: false, canCreate: false, canEdit: false, canDelete: false },
     editors: { canView: false, canCreate: false, canEdit: false, canDelete: false },
     reports: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    "conflict-report": { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    "booking-report": { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    "editor-report": { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    "chalan-report": { canView: false, canCreate: false, canEdit: false, canDelete: false },
     users: { canView: false, canCreate: false, canEdit: false, canDelete: false },
     "user-rights": { canView: false, canCreate: false, canEdit: false, canDelete: false },
   },
@@ -103,6 +127,10 @@ const moduleToSectionMap: Record<string, { module: string; section: string }[]> 
     { module: "Reports", section: "Editor Report" },
     { module: "Reports", section: "Chalan Report" },
   ],
+  "conflict-report": [{ module: "Reports", section: "Conflict Report" }],
+  "booking-report": [{ module: "Reports", section: "Booking Report" }],
+  "editor-report": [{ module: "Reports", section: "Editor Report" }],
+  "chalan-report": [{ module: "Reports", section: "Chalan Report" }],
   users: [{ module: "Utility", section: "User Management" }],
   "user-rights": [{ module: "Utility", section: "User Rights" }],
 };

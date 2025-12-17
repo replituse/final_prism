@@ -314,7 +314,7 @@ function BookingReportContent() {
 
 export default function BookingReportPage() {
   return (
-    <PagePermissionGuard module="reports">
+    <PagePermissionGuard module="booking-report">
       <BookingReportContent />
     </PagePermissionGuard>
   );
