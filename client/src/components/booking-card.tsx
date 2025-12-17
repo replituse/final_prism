@@ -65,7 +65,7 @@ export function BookingCard({
       <TooltipTrigger asChild>
         <div
           className={cn(
-            "relative rounded-md border-l-4 p-2 text-left hover-elevate cursor-pointer",
+            "relative rounded-md border-l-4 p-2 text-left hover-elevate cursor-pointer h-[72px]",
             statusColors[booking.status as keyof typeof statusColors]
           )}
           onClick={() => onEdit?.(booking)}
@@ -88,19 +88,13 @@ export function BookingCard({
           <div className="flex items-start justify-between gap-1">
             <div className="flex-1 min-w-0 overflow-hidden">
               <p 
-                className={cn("text-sm font-medium", !isEditable && "line-through text-muted-foreground")}
+                className={cn("text-sm font-medium truncate", !isEditable && "line-through text-muted-foreground")}
                 title={customerName}
               >
-                {truncateName(customerName)}
+                {truncateName(customerName, 12)}
               </p>
-              {!compact && (
-                <p className="text-xs text-muted-foreground truncate" title={booking.project?.name}>
-                  {truncateName(booking.project?.name || "", 18)}
-                </p>
-              )}
             </div>
             
-            {/* Menu only for editable bookings, non-focusable placeholder for cancelled */}
             {isEditable ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -159,39 +153,16 @@ export function BookingCard({
             )}
           </div>
 
-          <div className="mt-1 flex flex-col gap-0.5 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <span className="text-[10px] text-muted-foreground/70">Scheduled:</span>
-              <span className="font-mono">
-                {booking.fromTime?.slice(0, 5)} - {booking.toTime?.slice(0, 5)}
-              </span>
+          <div className="mt-1 text-xs text-muted-foreground">
+            <div className="font-mono">
+              {booking.fromTime?.slice(0, 5)} - {booking.toTime?.slice(0, 5)}
             </div>
             {(booking.actualFromTime || booking.actualToTime) && (
-              <div className="flex items-center gap-1">
-                <span className="text-[10px] text-green-600 dark:text-green-400">Actual:</span>
-                <span className="font-mono text-green-600 dark:text-green-400">
-                  {booking.actualFromTime?.slice(0, 5) || '--:--'} - {booking.actualToTime?.slice(0, 5) || '--:--'}
-                </span>
+              <div className="font-mono text-green-600 dark:text-green-400">
+                {booking.actualFromTime?.slice(0, 5) || '--:--'} - {booking.actualToTime?.slice(0, 5) || '--:--'}
               </div>
             )}
           </div>
-
-          {!compact && (
-            <div className="mt-1.5 flex flex-wrap items-center gap-1">
-              {booking.room && (
-                <Badge variant="outline" className="text-xs py-0 px-1.5">
-                  <Building className="h-3 w-3 mr-1" />
-                  {booking.room.name}
-                </Badge>
-              )}
-              {booking.editor && (
-                <Badge variant="outline" className="text-xs py-0 px-1.5">
-                  <User className="h-3 w-3 mr-1" />
-                  {booking.editor.name}
-                </Badge>
-              )}
-            </div>
-          )}
         </div>
       </TooltipTrigger>
       <TooltipContent side="right" className="max-w-xs">
