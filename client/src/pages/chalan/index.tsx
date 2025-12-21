@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
 import { useSearch, useLocation } from "wouter";
-import { Plus, Trash2, FileText, Eye, X, Pencil, Calendar, Link2, History, ClipboardList } from "lucide-react";
+import { Plus, Trash2, FileText, Eye, X, Pencil, Calendar, Link2, History, ClipboardList, ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -83,11 +83,18 @@ export default function ChalanPage() {
   const [selectedBookingId, setSelectedBookingId] = useState<string>("");
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
   const [historyChalan, setHistoryChalan] = useState<ChalanWithItems | null>(null);
+  const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
 
   const canEditChalans = user?.role === "admin" || user?.role === "gst" || user?.role === "account";
 
-  const { data: chalans = [], isLoading } = useQuery<ChalanWithItems[]>({
+  const { data: chalansData = [], isLoading } = useQuery<ChalanWithItems[]>({
     queryKey: ["/api/chalans"],
+  });
+
+  const chalans = [...chalansData].sort((a, b) => {
+    const dateA = new Date(a.chalanDate).getTime();
+    const dateB = new Date(b.chalanDate).getTime();
+    return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
   });
 
   const { data: customers = [] } = useQuery<Customer[]>({
@@ -478,21 +485,41 @@ export default function ChalanPage() {
           />
         ) : (
           <div className="space-y-4">
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-between items-center gap-2 flex-wrap">
               <Button 
-                variant="outline" 
-                onClick={() => setLocation("/chalan/revise")}
-                data-testid="button-revise-chalan"
+                variant="outline"
+                size="sm"
+                onClick={() => setSortOrder(sortOrder === "desc" ? "asc" : "desc")}
+                data-testid="button-sort-date"
               >
-                <ClipboardList className="h-4 w-4 mr-2" />
-                Revise Chalan
+                {sortOrder === "desc" ? (
+                  <>
+                    <ArrowDown className="h-4 w-4 mr-2" />
+                    Latest First
+                  </>
+                ) : (
+                  <>
+                    <ArrowUp className="h-4 w-4 mr-2" />
+                    Oldest First
+                  </>
+                )}
               </Button>
-              {canEditChalans && (
-                <Button onClick={handleOpenDialog} data-testid="button-create-chalan">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Chalan
+              <div className="flex justify-end gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setLocation("/chalan/revise")}
+                  data-testid="button-revise-chalan"
+                >
+                  <ClipboardList className="h-4 w-4 mr-2" />
+                  Revise Chalan
                 </Button>
-              )}
+                {canEditChalans && (
+                  <Button onClick={handleOpenDialog} data-testid="button-create-chalan">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Chalan
+                  </Button>
+                )}
+              </div>
             </div>
 
             <DataTable

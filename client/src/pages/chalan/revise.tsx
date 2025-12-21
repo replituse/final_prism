@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { ClipboardList, FileText, Clock, ArrowLeft, Save, XCircle, Trash2 } from "lucide-react";
+import { ClipboardList, FileText, Clock, ArrowLeft, Save, XCircle, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -44,9 +44,16 @@ export default function ChalanRevisePage() {
   const [cancelReason, setCancelReason] = useState("");
   const [editingItems, setEditingItems] = useState<Array<{ id?: number; description: string; quantity: string; rate: string }>>([]);
   const [editingNotes, setEditingNotes] = useState("");
+  const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
 
-  const { data: chalans = [], isLoading } = useQuery<ChalanWithItems[]>({
+  const { data: chalansData = [], isLoading } = useQuery<ChalanWithItems[]>({
     queryKey: ["/api/chalans"],
+  });
+
+  const chalans = [...chalansData].sort((a, b) => {
+    const dateA = new Date(a.chalanDate).getTime();
+    const dateB = new Date(b.chalanDate).getTime();
+    return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
   });
 
   const { data: revisions = [] } = useQuery<ChalanRevision[]>({
@@ -524,13 +531,33 @@ export default function ChalanRevisePage() {
             description="Create chalans first to be able to revise them."
           />
         ) : (
-          <DataTable
-            columns={columns}
-            data={chalans}
-            isLoading={isLoading}
-            searchPlaceholder="Search chalans..."
-            onRowClick={setSelectedChalan}
-          />
+          <div className="space-y-4">
+            <Button 
+              variant="outline"
+              size="sm"
+              onClick={() => setSortOrder(sortOrder === "desc" ? "asc" : "desc")}
+              data-testid="button-sort-date"
+            >
+              {sortOrder === "desc" ? (
+                <>
+                  <ArrowDown className="h-4 w-4 mr-2" />
+                  Latest First
+                </>
+              ) : (
+                <>
+                  <ArrowUp className="h-4 w-4 mr-2" />
+                  Oldest First
+                </>
+              )}
+            </Button>
+            <DataTable
+              columns={columns}
+              data={chalans}
+              isLoading={isLoading}
+              searchPlaceholder="Search chalans..."
+              onRowClick={setSelectedChalan}
+            />
+          </div>
         )}
       </div>
     </div>

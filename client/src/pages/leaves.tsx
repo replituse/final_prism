@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format, differenceInDays } from "date-fns";
-import { Plus, Pencil, Trash2, UserMinus, Calendar, History } from "lucide-react";
+import { Plus, Pencil, Trash2, UserMinus, Calendar, History, ArrowUp, ArrowDown } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -62,9 +62,16 @@ function LeavesContent() {
   const [deletingLeave, setDeletingLeave] = useState<LeaveWithEditor | null>(null);
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
   const [historyLeave, setHistoryLeave] = useState<LeaveWithEditor | null>(null);
+  const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
 
-  const { data: leaves = [], isLoading } = useQuery<LeaveWithEditor[]>({
+  const { data: leavesData = [], isLoading } = useQuery<LeaveWithEditor[]>({
     queryKey: ["/api/editor-leaves"],
+  });
+
+  const leaves = [...leavesData].sort((a, b) => {
+    const dateA = new Date(a.fromDate).getTime();
+    const dateB = new Date(b.fromDate).getTime();
+    return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
   });
 
   const { data: editors = [] } = useQuery<Editor[]>({
@@ -249,7 +256,25 @@ function LeavesContent() {
           />
         ) : (
           <div className="space-y-4">
-            <div className="flex justify-end">
+            <div className="flex justify-between items-center gap-2 flex-wrap">
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={() => setSortOrder(sortOrder === "desc" ? "asc" : "desc")}
+                data-testid="button-sort-date"
+              >
+                {sortOrder === "desc" ? (
+                  <>
+                    <ArrowDown className="h-4 w-4 mr-2" />
+                    Latest First
+                  </>
+                ) : (
+                  <>
+                    <ArrowUp className="h-4 w-4 mr-2" />
+                    Oldest First
+                  </>
+                )}
+              </Button>
               <Button onClick={() => handleOpenDialog()} data-testid="button-add-leave">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Leave
