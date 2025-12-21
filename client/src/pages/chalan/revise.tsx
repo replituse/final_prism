@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { ClipboardList, FileText, Clock, ArrowLeft, Save, XCircle } from "lucide-react";
+import { ClipboardList, FileText, Clock, ArrowLeft, Save, XCircle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
@@ -41,6 +42,8 @@ export default function ChalanRevisePage() {
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [revisionNotes, setRevisionNotes] = useState("");
   const [cancelReason, setCancelReason] = useState("");
+  const [editingItems, setEditingItems] = useState<Array<{ id?: number; description: string; quantity: string; rate: string }>>([]);
+  const [editingNotes, setEditingNotes] = useState("");
 
   const { data: chalans = [], isLoading } = useQuery<ChalanWithItems[]>({
     queryKey: ["/api/chalans"],
@@ -52,20 +55,25 @@ export default function ChalanRevisePage() {
   });
 
   const reviseMutation = useMutation({
-    mutationFn: async ({ chalanId, changes }: { chalanId: number; changes: string }) => {
-      return apiRequest("POST", `/api/chalans/${chalanId}/revise`, { changes });
+    mutationFn: async ({ chalanId, items, notes, changes }: { chalanId: number; items: any[]; notes: string; changes: string }) => {
+      return apiRequest("PATCH", `/api/chalans/${chalanId}`, { 
+        items,
+        notes,
+        revisions: [{ changes }],
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ predicate: (query) => 
         typeof query.queryKey[0] === 'string' && query.queryKey[0].startsWith('/api/chalans')
       });
-      toast({ title: "Revision recorded successfully" });
+      toast({ title: "Revision saved successfully" });
       setReviseDialogOpen(false);
-      setRevisionNotes("");
+      setEditingItems([]);
+      setEditingNotes("");
     },
     onError: (error: any) => {
       toast({
-        title: "Error creating revision",
+        title: "Error saving revision",
         description: error.message,
         variant: "destructive",
       });
@@ -173,7 +181,16 @@ export default function ChalanRevisePage() {
               </Button>
               <div className="flex items-center gap-2 flex-wrap">
                 <Button
-                  onClick={() => setReviseDialogOpen(true)}
+                  onClick={() => {
+                    setEditingItems(selectedChalan.items?.map(item => ({
+                      id: item.id,
+                      description: item.description,
+                      quantity: item.quantity.toString(),
+                      rate: item.rate.toString(),
+                    })) || []);
+                    setEditingNotes(selectedChalan.notes || "");
+                    setReviseDialogOpen(true);
+                  }}
                   disabled={selectedChalan.isCancelled}
                   data-testid="button-revise"
                 >
@@ -330,36 +347,96 @@ export default function ChalanRevisePage() {
           </div>
         </div>
 
-        {/* Revision Dialog */}
+        {/* Revision Edit Dialog */}
         <Dialog open={reviseDialogOpen} onOpenChange={setReviseDialogOpen}>
-          <DialogContent>
+          <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Create Revision</DialogTitle>
+              <DialogTitle>Create Revision - {selectedChalan?.chalanNumber}</DialogTitle>
               <DialogDescription>
-                Record changes made to chalan {selectedChalan.chalanNumber}.
+                Edit items, quantity, rate, and notes to create a revision.
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="revision-notes">Changes Description</Label>
-                <Textarea
-                  id="revision-notes"
-                  placeholder="Describe the changes made..."
-                  value={revisionNotes}
-                  onChange={(e) => setRevisionNotes(e.target.value)}
-                  className="mt-1"
-                  data-testid="input-revision-notes"
-                />
+            <ScrollArea className="h-[400px] border rounded-md p-4">
+              <div className="space-y-6 pr-4">
+                {/* Items Section */}
+                <div>
+                  <h3 className="font-semibold mb-4">Items</h3>
+                  <div className="space-y-4">
+                    {editingItems.map((item, index) => (
+                      <Card key={item.id || index}>
+                        <CardContent className="pt-6 space-y-4">
+                          <div>
+                            <Label>Description</Label>
+                            <Input
+                              value={item.description}
+                              onChange={(e) => {
+                                const updated = [...editingItems];
+                                updated[index].description = e.target.value;
+                                setEditingItems(updated);
+                              }}
+                              data-testid={`input-item-description-${index}`}
+                              className="mt-1"
+                            />
+                          </div>
+                          <div className="grid grid-cols-3 gap-4">
+                            <div>
+                              <Label>Quantity</Label>
+                              <Input
+                                type="number"
+                                value={item.quantity}
+                                onChange={(e) => {
+                                  const updated = [...editingItems];
+                                  updated[index].quantity = e.target.value;
+                                  setEditingItems(updated);
+                                }}
+                                data-testid={`input-item-quantity-${index}`}
+                                className="mt-1"
+                              />
+                            </div>
+                            <div>
+                              <Label>Rate (Rs.)</Label>
+                              <Input
+                                type="number"
+                                value={item.rate}
+                                onChange={(e) => {
+                                  const updated = [...editingItems];
+                                  updated[index].rate = e.target.value;
+                                  setEditingItems(updated);
+                                }}
+                                data-testid={`input-item-rate-${index}`}
+                                className="mt-1"
+                              />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Notes Section */}
+                <div>
+                  <Label htmlFor="revision-notes">Notes</Label>
+                  <Textarea
+                    id="revision-notes"
+                    placeholder="Add any additional notes..."
+                    value={editingNotes}
+                    onChange={(e) => setEditingNotes(e.target.value)}
+                    className="mt-1"
+                    data-testid="input-revision-notes"
+                  />
+                </div>
               </div>
-            </div>
+            </ScrollArea>
 
             <DialogFooter className="gap-2">
               <Button
                 variant="outline"
                 onClick={() => {
                   setReviseDialogOpen(false);
-                  setRevisionNotes("");
+                  setEditingItems([]);
+                  setEditingNotes("");
                 }}
                 data-testid="button-cancel-revision-dialog"
               >
@@ -367,14 +444,22 @@ export default function ChalanRevisePage() {
               </Button>
               <Button
                 onClick={() => {
-                  if (selectedChalan && revisionNotes.trim()) {
+                  if (selectedChalan) {
                     reviseMutation.mutate({
                       chalanId: selectedChalan.id,
-                      changes: revisionNotes,
+                      items: editingItems.map(item => ({
+                        id: item.id,
+                        description: item.description,
+                        quantity: parseFloat(item.quantity) || 0,
+                        rate: parseFloat(item.rate) || 0,
+                        amount: (parseFloat(item.quantity) || 0) * (parseFloat(item.rate) || 0),
+                      })),
+                      notes: editingNotes,
+                      changes: `Updated items and notes`,
                     });
                   }
                 }}
-                disabled={!revisionNotes.trim() || reviseMutation.isPending}
+                disabled={reviseMutation.isPending}
                 data-testid="button-save-revision"
               >
                 {reviseMutation.isPending ? "Saving..." : "Save Revision"}
