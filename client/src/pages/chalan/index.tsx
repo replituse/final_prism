@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
 import { useSearch, useLocation } from "wouter";
-import { Plus, Trash2, FileText, Eye, X, Pencil, Calendar, Link2, History, ClipboardList, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, Trash2, FileText, Eye, X, Pencil, Calendar, Link2, History, ClipboardList, ArrowUp, ArrowDown, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -97,6 +97,13 @@ export default function ChalanPage() {
     const dateB = new Date(b.chalanDate).getTime();
     return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
   });
+
+  // Get set of booking IDs that already have chalans
+  const bookingsWithChalans = new Set(
+    chalansData
+      .filter(c => c.bookingId && !c.isCancelled)
+      .map(c => c.bookingId)
+  );
 
   const { data: customers = [] } = useQuery<Customer[]>({
     queryKey: ["/api/customers"],
@@ -202,11 +209,12 @@ export default function ChalanPage() {
         notes: data.notes,
         totalAmount: totalAmount.toString(),
         items,
+        bookingId: selectedBookingId ? parseInt(selectedBookingId) : undefined,
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ predicate: (query) => 
-        typeof query.queryKey[0] === 'string' && query.queryKey[0].startsWith('/api/chalans')
+        typeof query.queryKey[0] === 'string' && (query.queryKey[0].startsWith('/api/chalans') || query.queryKey[0] === '/api/bookings')
       });
       toast({ title: "Chalan created successfully" });
       handleCloseDialog();
@@ -266,7 +274,7 @@ export default function ChalanPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ predicate: (query) => 
-        typeof query.queryKey[0] === 'string' && query.queryKey[0].startsWith('/api/chalans')
+        typeof query.queryKey[0] === 'string' && (query.queryKey[0].startsWith('/api/chalans') || query.queryKey[0] === '/api/bookings')
       });
       toast({ title: "Chalan deleted successfully" });
       setDeleteDialogOpen(false);
@@ -329,13 +337,11 @@ export default function ChalanPage() {
     const booking = bookings.find(b => b.id === parseInt(bookingId));
     if (!booking) return;
     
+    // Auto-fill all fields immediately
     form.setValue("customerId", booking.customerId.toString());
-    
-    setTimeout(() => {
-      form.setValue("projectId", booking.projectId.toString());
-    }, 100);
-    
+    form.setValue("projectId", booking.projectId.toString());
     form.setValue("chalanDate", booking.bookingDate);
+    form.setValue("notes", booking.notes || "");
     
     const hours = booking.totalHours || 0;
     const roomName = booking.room?.name || "Room booking";
@@ -349,8 +355,6 @@ export default function ChalanPage() {
       quantity: (hours > 0 ? hours : 1).toString(),
       rate: "0",
     }]);
-    
-    form.setValue("notes", booking.notes || "");
   };
 
   const handleEditChalan = (chalan: ChalanWithItems) => {
@@ -611,17 +615,27 @@ export default function ChalanPage() {
                           .filter(b => b.status === "confirmed")
                           .sort((a, b) => new Date(b.bookingDate).getTime() - new Date(a.bookingDate).getTime())
                           .slice(0, 50)
-                          .map((booking) => (
-                            <SelectItem key={booking.id} value={booking.id.toString()}>
-                              <div className="flex items-center gap-2">
-                                <Calendar className="h-3 w-3" />
-                                <span>{format(new Date(booking.bookingDate), "PP")}</span>
-                                <span className="text-muted-foreground">-</span>
-                                <span>{booking.customer?.name || "Unknown"}</span>
-                                <span className="text-muted-foreground">({booking.room?.name})</span>
-                              </div>
-                            </SelectItem>
-                          ))}
+                          .map((booking) => {
+                            const hasChalan = bookingsWithChalans.has(booking.id);
+                            return (
+                              <SelectItem 
+                                key={booking.id} 
+                                value={booking.id.toString()}
+                                disabled={hasChalan}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <Calendar className="h-3 w-3" />
+                                  <span>{format(new Date(booking.bookingDate), "PP")}</span>
+                                  <span className="text-muted-foreground">-</span>
+                                  <span>{booking.customer?.name || "Unknown"}</span>
+                                  <span className="text-muted-foreground">({booking.room?.name})</span>
+                                  {hasChalan && (
+                                    <Lock className="h-3 w-3 text-destructive ml-1" />
+                                  )}
+                                </div>
+                              </SelectItem>
+                            );
+                          })}
                       </SelectContent>
                     </Select>
                   </div>
