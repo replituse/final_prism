@@ -94,6 +94,12 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
     enabled: open,
   });
 
+  const formatTimeForInput = (timeValue: string | undefined | null): string => {
+    if (!timeValue) return "";
+    // Handle format "HH:MM:SS" or "HH:MM" from database
+    return timeValue.substring(0, 5); // Return only "HH:MM"
+  };
+
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(bookingFormSchema),
     defaultValues: {
@@ -103,10 +109,10 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
       contactId: booking?.contactId?.toString() || "",
       editorId: booking?.editorId?.toString() || "",
       bookingDate: booking?.bookingDate || (defaultDate ? format(defaultDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd")),
-      fromTime: booking?.fromTime || "09:00",
-      toTime: booking?.toTime || "18:00",
-      actualFromTime: booking?.actualFromTime || "",
-      actualToTime: booking?.actualToTime || "",
+      fromTime: formatTimeForInput(booking?.fromTime) || "09:00",
+      toTime: formatTimeForInput(booking?.toTime) || "18:00",
+      actualFromTime: formatTimeForInput(booking?.actualFromTime),
+      actualToTime: formatTimeForInput(booking?.actualToTime),
       breakHours: booking?.breakHours?.toString() || "0",
       status: (booking?.status as any) || "planning",
       notes: booking?.notes || "",
@@ -135,10 +141,10 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
         contactId: booking?.contactId?.toString() || "",
         editorId: booking?.editorId?.toString() || "",
         bookingDate: booking?.bookingDate || (defaultDate ? format(defaultDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd")),
-        fromTime: booking?.fromTime || "09:00",
-        toTime: booking?.toTime || "18:00",
-        actualFromTime: booking?.actualFromTime || "",
-        actualToTime: booking?.actualToTime || "",
+        fromTime: formatTimeForInput(booking?.fromTime) || "09:00",
+        toTime: formatTimeForInput(booking?.toTime) || "18:00",
+        actualFromTime: formatTimeForInput(booking?.actualFromTime),
+        actualToTime: formatTimeForInput(booking?.actualToTime),
         breakHours: booking?.breakHours?.toString() || "0",
         status: (booking?.status as any) || "planning",
         notes: booking?.notes || "",
@@ -206,8 +212,8 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
         bookingDate: data.bookingDate,
         fromTime: data.fromTime,
         toTime: data.toTime,
-        actualFromTime: booking?.actualFromTime || null,
-        actualToTime: booking?.actualToTime || null,
+        actualFromTime: data.actualFromTime || null,
+        actualToTime: data.actualToTime || null,
         breakHours: data.breakHours || "0",
         status: data.status,
         notes: data.notes,
