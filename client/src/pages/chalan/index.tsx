@@ -541,15 +541,6 @@ export default function ChalanPage() {
       ),
     },
     {
-      key: "totalAmount",
-      header: "Amount",
-      cell: (row) => (
-        <span className="font-mono font-medium">
-          Rs. {(row.totalAmount || 0).toLocaleString()}
-        </span>
-      ),
-    },
-    {
       key: "isCancelled",
       header: "Status",
       cell: (row) => (
