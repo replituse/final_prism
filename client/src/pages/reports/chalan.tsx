@@ -94,6 +94,7 @@ function ChalanReportContent() {
     {
       key: "chalanNumber",
       header: "Chalan No.",
+      sortable: true,
       cell: (row) => (
         <span className="font-mono font-medium">{row.chalanNumber}</span>
       ),
@@ -101,11 +102,13 @@ function ChalanReportContent() {
     {
       key: "customer",
       header: "Customer",
+      sortable: true,
       cell: (row) => row.customer?.name || "-",
     },
     {
       key: "project",
       header: "Project",
+      sortable: true,
       cell: (row) => row.project?.name || "-",
     },
     {
@@ -121,6 +124,7 @@ function ChalanReportContent() {
     {
       key: "totalAmount",
       header: "Amount",
+      sortable: true,
       cell: (row) => (
         <span className="font-mono font-medium whitespace-nowrap">
           Rs. {(row.totalAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}

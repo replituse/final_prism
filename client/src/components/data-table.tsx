@@ -41,6 +41,7 @@ interface DataTableProps<T> {
   onExport?: () => void;
   pageSize?: number;
   enableColumnFilters?: boolean;
+  defaultSort?: { key: string; direction: SortDirection };
 }
 
 export function DataTable<T extends Record<string, any>>({
@@ -54,13 +55,14 @@ export function DataTable<T extends Record<string, any>>({
   onExport,
   pageSize = 5,
   enableColumnFilters = false,
+  defaultSort = { key: "bookingDate", direction: "desc" },
 }: DataTableProps<T>) {
   const [search, setSearch] = useState("");
   const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(pageSize);
-  const [sortColumn, setSortColumn] = useState<string | null>(null);
-  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+  const [sortColumn, setSortColumn] = useState<string | null>(defaultSort.key);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(defaultSort.direction);
 
   const handleSort = (columnKey: string) => {
     if (sortColumn === columnKey) {
@@ -123,9 +125,21 @@ export function DataTable<T extends Record<string, any>>({
       let aVal = a[sortColumn];
       let bVal = b[sortColumn];
 
-      // Handle nested objects like customer, project, room
-      if (aVal && typeof aVal === 'object' && 'name' in aVal) aVal = aVal.name;
-      if (bVal && typeof bVal === 'object' && 'name' in bVal) bVal = bVal.name;
+      // Handle nested objects like customer, project, room, editor
+      if (aVal && typeof aVal === 'object') {
+        if ('name' in aVal) aVal = aVal.name;
+        else if ('chalanNumber' in aVal) aVal = aVal.chalanNumber;
+      }
+      if (bVal && typeof bVal === 'object') {
+        if ('name' in bVal) bVal = bVal.name;
+        else if ('chalanNumber' in bVal) bVal = bVal.chalanNumber;
+      }
+
+      // Special handling for concatenated time string "09:00 - 18:00"
+      if (sortColumn === 'time') {
+        aVal = a.fromTime || "";
+        bVal = b.fromTime || "";
+      }
 
       // Handle dates
       if (sortColumn.toLowerCase().includes('date')) {
@@ -139,7 +153,7 @@ export function DataTable<T extends Record<string, any>>({
 
       // Compare
       if (typeof aVal === 'string' && typeof bVal === 'string') {
-        const comparison = aVal.localeCompare(bVal);
+        const comparison = aVal.localeCompare(bVal, undefined, { numeric: true, sensitivity: 'base' });
         return sortDirection === "asc" ? comparison : -comparison;
       }
 
@@ -221,28 +235,26 @@ export function DataTable<T extends Record<string, any>>({
                   key={column.key} 
                   className={cn(
                     column.className,
-                    column.sortable && "cursor-pointer select-none"
+                    "cursor-pointer select-none"
                   )}
-                  onClick={() => column.sortable && handleSort(column.key)}
+                  onClick={() => handleSort(column.key)}
                 >
                   <div className="flex flex-col gap-2 py-2">
                     <div className="flex items-center gap-1">
                       {column.header}
-                      {column.sortable && (
-                        <span className="inline-flex">
-                          {sortColumn === column.key ? (
-                            <ArrowUp 
-                              className={cn(
-                                "h-4 w-4 text-primary transition-transform duration-200",
-                                sortDirection === "desc" && "rotate-180"
-                              )} 
-                              data-testid={`sort-${sortDirection}-${column.key}`} 
-                            />
-                          ) : (
-                            <ArrowUp className="h-4 w-4 text-muted-foreground opacity-40" data-testid={`sort-none-${column.key}`} />
-                          )}
-                        </span>
-                      )}
+                      <span className="inline-flex">
+                        {sortColumn === column.key ? (
+                          <ArrowUp 
+                            className={cn(
+                              "h-4 w-4 text-primary transition-transform duration-200",
+                              sortDirection === "desc" && "rotate-180"
+                            )} 
+                            data-testid={`sort-${sortDirection}-${column.key}`} 
+                          />
+                        ) : (
+                          <ArrowUp className="h-4 w-4 text-muted-foreground opacity-40" data-testid={`sort-none-${column.key}`} />
+                        )}
+                      </span>
                     </div>
                     {enableColumnFilters && column.key !== "status" && column.key !== "isCancelled" && (
                       <div onClick={(e) => e.stopPropagation()}>

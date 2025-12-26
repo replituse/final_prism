@@ -99,16 +99,19 @@ function BookingReportContent() {
     {
       key: "customer",
       header: "Customer",
+      sortable: true,
       cell: (row) => row.customer?.name || "-",
     },
     {
       key: "project",
       header: "Project",
+      sortable: true,
       cell: (row) => row.project?.name || "-",
     },
     {
       key: "room",
       header: "Room",
+      sortable: true,
       cell: (row) => (
         <div className="flex items-center gap-1">
           <Building className="h-3 w-3 text-muted-foreground" />
@@ -119,6 +122,7 @@ function BookingReportContent() {
     {
       key: "time",
       header: "Time",
+      sortable: true,
       cell: (row) => (
         <div className="space-y-0.5">
           <div className="font-mono text-sm">
@@ -135,6 +139,7 @@ function BookingReportContent() {
     {
       key: "editor",
       header: "Editor",
+      sortable: true,
       cell: (row) => (
         <div className="flex items-center gap-1">
           <User className="h-3 w-3 text-muted-foreground" />
