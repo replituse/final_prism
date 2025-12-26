@@ -161,7 +161,7 @@ export function ChalanInvoice({ chalan, onClose, showActions = true, viewOnly = 
 
             <Separator className="my-4" />
 
-            <div className="border-t-2 border-foreground/20 pt-4">
+            <div className="pt-2">
               <div className="grid grid-cols-5 gap-2">
                 {[
                   { label: "Customer Name", key: "customer-name", value: chalan.customer?.name },
@@ -172,13 +172,13 @@ export function ChalanInvoice({ chalan, onClose, showActions = true, viewOnly = 
                 ].map((item) => (
                   <div key={item.key} className="text-center">
                     {item.value && (
-                      <p className="text-xs font-medium">
+                      <p className="text-xs font-medium mb-2">
                         {item.value}
                       </p>
                     )}
-                    <div className={item.value ? "h-0" : "h-10"} />
+                    <div className="h-10" />
                     <div className="border-t-2 border-foreground/50" />
-                    <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wide">{item.label}</p>
+                    <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wide mt-1">{item.label}</p>
                   </div>
                 ))}
               </div>
