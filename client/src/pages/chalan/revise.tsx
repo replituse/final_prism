@@ -267,13 +267,6 @@ export default function ChalanRevisePage() {
                       <p className="font-medium">{selectedChalan.project?.name || "-"}</p>
                     </div>
                   </div>
-                  <Separator />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total Amount</p>
-                    <p className="font-mono font-bold text-2xl">
-                      Rs. {(selectedChalan.totalAmount || 0).toLocaleString()}
-                    </p>
-                  </div>
                   {selectedChalan.notes && (
                     <>
                       <Separator />
