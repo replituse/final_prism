@@ -161,33 +161,33 @@ export function ChalanInvoice({ chalan, onClose, showActions = true, viewOnly = 
 
             <Separator className="my-4" />
 
-            <div className="grid grid-cols-3 gap-4 pt-4 mb-4">
+            <div className="grid grid-cols-2 gap-6 pt-4 mb-6">
               <div>
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Customer (Client)</p>
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Customer Name</p>
                 <p className="text-sm font-medium">{chalan.customer?.name || "—"}</p>
               </div>
               <div>
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Editor (Technician)</p>
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Editor Name</p>
                 <p className="text-sm font-medium">{chalan.booking?.editor?.name || "—"}</p>
-              </div>
-              <div>
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Status</p>
-                <p className="text-sm font-medium">{chalan.isCancelled ? "Cancelled" : chalan.isRevised ? "Revised" : "Active"}</p>
               </div>
             </div>
 
-            <Separator className="my-4" />
-
-            <div className="grid grid-cols-5 gap-2 pt-2">
-              {["Prepared By", "Checked By", "Approved By", "Received By", "Authority"].map(
-                (label) => (
-                  <div key={label} className="text-center">
+            <div className="border-t-2 border-foreground/20 pt-4">
+              <div className="grid grid-cols-5 gap-2">
+                {[
+                  { label: "Customer Name", key: "customer-name" },
+                  { label: "Customer Signature", key: "customer-sig" },
+                  { label: "Editor Name", key: "editor-name" },
+                  { label: "Editor Signature", key: "editor-sig" },
+                  { label: "Authority Signature", key: "authority-sig" },
+                ].map((item) => (
+                  <div key={item.key} className="text-center">
                     <div className="h-10" />
                     <div className="border-t-2 border-foreground/50 pt-1" />
-                    <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wide">{label}</p>
+                    <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wide">{item.label}</p>
                   </div>
-                )
-              )}
+                ))}
+              </div>
             </div>
 
             <div className="mt-4 pt-3 border-t border-foreground/20 text-center text-[10px] text-muted-foreground">
