@@ -122,16 +122,6 @@ function ChalanReportContent() {
       ),
     },
     {
-      key: "totalAmount",
-      header: "Amount",
-      sortable: true,
-      cell: (row) => (
-        <span className="font-mono font-medium whitespace-nowrap">
-          Rs. {(row.totalAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-        </span>
-      ),
-    },
-    {
       key: "isCancelled",
       header: "Status",
       cell: (row) => (

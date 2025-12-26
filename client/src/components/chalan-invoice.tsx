@@ -100,44 +100,6 @@ export function ChalanInvoice({ chalan, onClose, showActions = true, viewOnly = 
               </div>
             </div>
 
-            <Separator className="my-4" />
-
-            <div className="mb-4">
-              <table className="w-full border-collapse text-xs">
-                <thead>
-                  <tr className="bg-muted">
-                    <th className="text-left p-2 border border-foreground/20 font-semibold">S.No</th>
-                    <th className="text-left p-2 border border-foreground/20 font-semibold">Description</th>
-                    <th className="text-center p-2 border border-foreground/20 font-semibold w-32">Booking From → To Time</th>
-                    <th className="text-center p-2 border border-foreground/20 font-semibold w-32">Actual From → To Time</th>
-                    <th className="text-center p-2 border border-foreground/20 font-semibold w-20">Break Hours</th>
-                    <th className="text-center p-2 border border-foreground/20 font-semibold w-20">Total Hours</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {chalan.booking ? (
-                    <tr className="hover:bg-muted/50">
-                      <td className="p-2 border border-foreground/20 text-center font-mono">1</td>
-                      <td className="p-2 border border-foreground/20">{chalan.booking?.project?.name || "Project"}</td>
-                      <td className="p-2 border border-foreground/20 text-center font-mono">
-                        {chalan.booking?.fromTime?.slice(0, 5)} → {chalan.booking?.toTime?.slice(0, 5)}
-                      </td>
-                      <td className="p-2 border border-foreground/20 text-center font-mono">
-                        {chalan.booking?.actualFromTime?.slice(0, 5) || '—'} → {chalan.booking?.actualToTime?.slice(0, 5) || '—'}
-                      </td>
-                      <td className="p-2 border border-foreground/20 text-center font-mono">{chalan.booking?.breakHours || 0}</td>
-                      <td className="p-2 border border-foreground/20 text-center font-mono">{chalan.booking?.totalHours || 0}</td>
-                    </tr>
-                  ) : chalan.items?.map((item, index) => (
-                    <tr key={index} className="hover:bg-muted/50">
-                      <td className="p-2 border border-foreground/20 text-center font-mono">{index + 1}</td>
-                      <td className="p-2 border border-foreground/20">{item.description}</td>
-                      <td colSpan={4} className="p-2 border border-foreground/20 text-center text-muted-foreground">Item details</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
 
             {chalan.notes && (
               <div className="mb-4 p-3 bg-muted/50 rounded-md">

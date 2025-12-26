@@ -295,36 +295,6 @@ export default function ChalanRevisePage() {
                 </CardContent>
               </Card>
 
-              {/* Items Card */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg">Items</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ScrollArea className="h-[250px]">
-                    {selectedChalan.items && selectedChalan.items.length > 0 ? (
-                      <div className="space-y-3">
-                        {selectedChalan.items.map((item, index) => (
-                          <div
-                            key={item.id || index}
-                            className="p-3 rounded-md bg-muted/50 space-y-1"
-                          >
-                            <p className="font-medium">{item.description}</p>
-                            <div className="flex items-center justify-between text-sm text-muted-foreground">
-                              <span>Qty: {item.quantity} x Rs. {item.rate}</span>
-                              <span className="font-mono font-medium">Rs. {item.amount}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center h-full text-center py-8">
-                        <p className="text-sm text-muted-foreground">No items</p>
-                      </div>
-                    )}
-                  </ScrollArea>
-                </CardContent>
-              </Card>
             </div>
 
             {/* Revision History */}
@@ -405,89 +375,6 @@ export default function ChalanRevisePage() {
                       </div>
                     </CardContent>
                   </Card>
-                </div>
-
-                {/* Items Section */}
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-4">
-                    <h3 className="font-semibold">Items</h3>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setEditingItems([...editingItems, { description: "", quantity: "1", rate: "0" }]);
-                      }}
-                      data-testid="button-add-item"
-                    >
-                      + Add Item
-                    </Button>
-                  </div>
-                  <div className="space-y-4">
-                    {editingItems.map((item, index) => (
-                      <Card key={item.id || index}>
-                        <CardContent className="pt-6 space-y-4">
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1">
-                              <Label>Description</Label>
-                              <Input
-                                value={item.description}
-                                onChange={(e) => {
-                                  const updated = [...editingItems];
-                                  updated[index].description = e.target.value;
-                                  setEditingItems(updated);
-                                }}
-                                data-testid={`input-item-description-${index}`}
-                                className="mt-1"
-                              />
-                            </div>
-                            {editingItems.length > 1 && (
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className="mt-6"
-                                onClick={() => {
-                                  setEditingItems(editingItems.filter((_, i) => i !== index));
-                                }}
-                                data-testid={`button-delete-item-${index}`}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <Label>Quantity</Label>
-                              <Input
-                                type="number"
-                                value={item.quantity}
-                                onChange={(e) => {
-                                  const updated = [...editingItems];
-                                  updated[index].quantity = e.target.value;
-                                  setEditingItems(updated);
-                                }}
-                                data-testid={`input-item-quantity-${index}`}
-                                className="mt-1"
-                              />
-                            </div>
-                            <div>
-                              <Label>Rate (Rs.)</Label>
-                              <Input
-                                type="number"
-                                value={item.rate}
-                                onChange={(e) => {
-                                  const updated = [...editingItems];
-                                  updated[index].rate = e.target.value;
-                                  setEditingItems(updated);
-                                }}
-                                data-testid={`input-item-rate-${index}`}
-                                className="mt-1"
-                              />
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
                 </div>
 
                 {/* Notes Section */}
