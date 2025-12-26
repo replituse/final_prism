@@ -532,6 +532,11 @@ export default function ChalanPage() {
       cell: (row) => row.project?.name || "-",
     },
     {
+      key: "editor",
+      header: "Editor",
+      cell: (row) => row.booking?.editor?.name || "-",
+    },
+    {
       key: "chalanDate",
       header: "Date",
       cell: (row) => (
