@@ -161,28 +161,22 @@ export function ChalanInvoice({ chalan, onClose, showActions = true, viewOnly = 
 
             <Separator className="my-4" />
 
-            <div className="grid grid-cols-2 gap-6 pt-4 mb-6">
-              <div>
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Customer Name</p>
-                <p className="text-sm font-medium">{chalan.customer?.name || "—"}</p>
-              </div>
-              <div>
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Editor Name</p>
-                <p className="text-sm font-medium">{chalan.booking?.editor?.name || "—"}</p>
-              </div>
-            </div>
-
             <div className="border-t-2 border-foreground/20 pt-4">
               <div className="grid grid-cols-5 gap-2">
                 {[
-                  { label: "Customer Name", key: "customer-name" },
-                  { label: "Customer Signature", key: "customer-sig" },
-                  { label: "Editor Name", key: "editor-name" },
-                  { label: "Editor Signature", key: "editor-sig" },
-                  { label: "Authority Signature", key: "authority-sig" },
+                  { label: "Customer Name", key: "customer-name", value: chalan.customer?.name },
+                  { label: "Customer Signature", key: "customer-sig", value: null },
+                  { label: "Editor Name", key: "editor-name", value: chalan.booking?.editor?.name },
+                  { label: "Editor Signature", key: "editor-sig", value: null },
+                  { label: "Authority Signature", key: "authority-sig", value: null },
                 ].map((item) => (
                   <div key={item.key} className="text-center">
-                    <div className="h-10" />
+                    {item.value && (
+                      <div className="text-xs font-medium mb-1 pb-1 border-b border-foreground/20">
+                        {item.value}
+                      </div>
+                    )}
+                    <div className={item.value ? "h-6" : "h-10"} />
                     <div className="border-t-2 border-foreground/50 pt-1" />
                     <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wide">{item.label}</p>
                   </div>
