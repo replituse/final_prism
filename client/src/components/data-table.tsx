@@ -259,7 +259,7 @@ export function DataTable<T extends Record<string, any>>({
                         )}
                       </span>
                     </div>
-                    {enableColumnFilters && column.key !== "status" && column.key !== "isCancelled" && (
+                    {enableColumnFilters && column.key !== "status" && column.key !== "isCancelled" && !["bookingDate", "chalanDate", "customer", "project", "room", "editor", "time", "chalanNumber", "totalAmount"].includes(column.key) && (
                       <div onClick={(e) => e.stopPropagation()}>
                         <Input
                           placeholder={`Filter ${column.header}...`}
