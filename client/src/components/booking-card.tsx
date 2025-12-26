@@ -59,6 +59,7 @@ export function BookingCard({
   const isEditable = booking.status !== "cancelled";
   const isCancelled = booking.status === "cancelled";
   const customerName = booking.customer?.name || "Unknown Customer";
+  const projectName = booking.project?.name || "No Project";
 
   return (
     <Tooltip>
@@ -92,6 +93,12 @@ export function BookingCard({
                 title={customerName}
               >
                 {truncateName(customerName, 12)}
+              </p>
+              <p 
+                className="text-xs font-normal text-muted-foreground truncate mt-0.5"
+                title={projectName}
+              >
+                {truncateName(projectName, 12)}
               </p>
             </div>
             
