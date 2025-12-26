@@ -65,6 +65,12 @@ const chalanFormSchema = z.object({
   notes: z.string().optional(),
   items: z.array(chalanItemSchema).min(1, "At least one item is required"),
   bookingId: z.string().optional(),
+  fromTime: z.string().optional(),
+  toTime: z.string().optional(),
+  actualFromTime: z.string().optional(),
+  actualToTime: z.string().optional(),
+  breakHours: z.string().optional(),
+  totalHours: z.string().optional(),
 });
 
 type ChalanFormValues = z.infer<typeof chalanFormSchema>;
@@ -126,6 +132,12 @@ export default function ChalanPage() {
       chalanDate: format(new Date(), "yyyy-MM-dd"),
       notes: "",
       items: [{ description: "", quantity: "1", rate: "0" }],
+      fromTime: "",
+      toTime: "",
+      actualFromTime: "",
+      actualToTime: "",
+      breakHours: "",
+      totalHours: "",
     },
   });
 
@@ -210,6 +222,12 @@ export default function ChalanPage() {
         totalAmount: totalAmount.toString(),
         items,
         bookingId: selectedBookingId ? parseInt(selectedBookingId) : undefined,
+        fromTime: data.fromTime,
+        toTime: data.toTime,
+        actualFromTime: data.actualFromTime,
+        actualToTime: data.actualToTime,
+        breakHours: data.breakHours,
+        totalHours: data.totalHours,
       });
     },
     onSuccess: () => {
@@ -250,6 +268,12 @@ export default function ChalanPage() {
         notes: data.notes,
         totalAmount: totalAmount.toString(),
         items,
+        fromTime: data.fromTime,
+        toTime: data.toTime,
+        actualFromTime: data.actualFromTime,
+        actualToTime: data.actualToTime,
+        breakHours: data.breakHours,
+        totalHours: data.totalHours,
       });
     },
     onSuccess: () => {
@@ -326,6 +350,12 @@ export default function ChalanPage() {
       chalanDate: format(new Date(), "yyyy-MM-dd"),
       notes: "",
       items: [{ description: "", quantity: "1", rate: "0" }],
+      fromTime: "",
+      toTime: "",
+      actualFromTime: "",
+      actualToTime: "",
+      breakHours: "",
+      totalHours: "",
     });
     setDialogOpen(true);
   };
@@ -342,6 +372,14 @@ export default function ChalanPage() {
     form.setValue("projectId", booking.projectId.toString());
     form.setValue("chalanDate", booking.bookingDate);
     form.setValue("notes", booking.notes || "");
+    
+    // Auto-populate time fields from booking
+    if (booking.fromTime) form.setValue("fromTime", booking.fromTime);
+    if (booking.toTime) form.setValue("toTime", booking.toTime);
+    if (booking.actualFromTime) form.setValue("actualFromTime", booking.actualFromTime);
+    if (booking.actualToTime) form.setValue("actualToTime", booking.actualToTime);
+    if (booking.breakHours) form.setValue("breakHours", booking.breakHours.toString());
+    if (booking.totalHours) form.setValue("totalHours", booking.totalHours.toString());
     
     const hours = booking.totalHours || 0;
     const roomName = booking.room?.name || "Room booking";

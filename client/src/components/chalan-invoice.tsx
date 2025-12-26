@@ -101,6 +101,40 @@ export function ChalanInvoice({ chalan, onClose, showActions = true, viewOnly = 
             </div>
 
 
+            <div className="mb-4">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">Booking Details</p>
+              <div className="overflow-x-auto border border-foreground/20 rounded-md">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="bg-muted/50 border-b border-foreground/20">
+                      <th className="px-3 py-2 text-left font-semibold">Customer</th>
+                      <th className="px-3 py-2 text-left font-semibold">Booking Time (From-To)</th>
+                      <th className="px-3 py-2 text-left font-semibold">Actual Time (From-To)</th>
+                      <th className="px-3 py-2 text-left font-semibold">Break Hours</th>
+                      <th className="px-3 py-2 text-left font-semibold">Total Hours</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b border-foreground/20 hover:bg-muted/30">
+                      <td className="px-3 py-2">{chalan.customer?.name || "—"}</td>
+                      <td className="px-3 py-2 font-mono">
+                        {chalan.fromTime && chalan.toTime 
+                          ? `${chalan.fromTime.slice(0, 5)} - ${chalan.toTime.slice(0, 5)}`
+                          : "—"}
+                      </td>
+                      <td className="px-3 py-2 font-mono">
+                        {chalan.actualFromTime && chalan.actualToTime
+                          ? `${chalan.actualFromTime.slice(0, 5)} - ${chalan.actualToTime.slice(0, 5)}`
+                          : "—"}
+                      </td>
+                      <td className="px-3 py-2 font-mono">{chalan.breakHours || "0"} hrs</td>
+                      <td className="px-3 py-2 font-mono font-semibold">{chalan.totalHours || "0"} hrs</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
             {chalan.notes && (
               <div className="mb-4 p-3 bg-muted/50 rounded-md">
                 <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Notes / Remarks</p>
