@@ -501,19 +501,13 @@ export default function ChalanPage() {
       <Header title="Chalan Entry" />
 
       <div className="flex-1 p-6 overflow-auto">
-        {chalans.length === 0 && !isLoading ? (
-          <EmptyState
-            icon={FileText}
-            title="No chalans yet"
-            description="Chalans are created from bookings. Create a booking first to generate a chalan."
-          />
-        ) : (
-          <div className="space-y-4">
-            <div className="flex justify-end gap-2">
-              <Button onClick={handleOpenDialog} data-testid="button-create-chalan">
-                <Plus className="h-4 w-4 mr-2" />
-                Create Chalan
-              </Button>
+        <div className="space-y-4">
+          <div className="flex justify-end gap-2">
+            <Button onClick={handleOpenDialog} data-testid="button-create-chalan">
+              <Plus className="h-4 w-4 mr-2" />
+              Create Chalan
+            </Button>
+            {chalans.length > 0 && (
               <Button 
                 variant="outline" 
                 onClick={() => setLocation("/chalan/revise")}
@@ -522,7 +516,16 @@ export default function ChalanPage() {
                 <ClipboardList className="h-4 w-4 mr-2" />
                 Revise Chalan
               </Button>
-            </div>
+            )}
+          </div>
+
+          {chalans.length === 0 && !isLoading ? (
+            <EmptyState
+              icon={FileText}
+              title="No chalans yet"
+              description="Click 'Create Chalan' above to create a new chalan from a confirmed booking."
+            />
+          ) : (
 
             <DataTable
               columns={columns}
@@ -576,8 +579,8 @@ export default function ChalanPage() {
                 </div>
               )}
             />
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={handleCloseDialog}>
