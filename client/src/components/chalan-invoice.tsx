@@ -172,12 +172,12 @@ export function ChalanInvoice({ chalan, onClose, showActions = true, viewOnly = 
                 ].map((item) => (
                   <div key={item.key} className="text-center">
                     {item.value && (
-                      <div className="text-xs font-medium mb-1 pb-1 border-b border-foreground/20">
+                      <p className="text-xs font-medium">
                         {item.value}
-                      </div>
+                      </p>
                     )}
-                    <div className={item.value ? "h-6" : "h-10"} />
-                    <div className="border-t-2 border-foreground/50 pt-1" />
+                    <div className={item.value ? "h-0" : "h-10"} />
+                    <div className="border-t-2 border-foreground/50" />
                     <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wide">{item.label}</p>
                   </div>
                 ))}
