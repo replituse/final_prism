@@ -274,7 +274,6 @@ function ChalanReportContent() {
                 columns={columns}
                 data={filteredChalans}
                 searchPlaceholder="Search chalans..."
-                enableColumnFilters={true}
                 actions={(row) => (
                   <div className="flex items-center gap-1">
                     <Button
