@@ -234,14 +234,17 @@ export function DataTable<T extends Record<string, any>>({
                 <TableHead 
                   key={column.key} 
                   className={cn(
-                    column.className,
-                    "cursor-pointer select-none"
+                    column.className
                   )}
-                  onClick={() => handleSort(column.key)}
                 >
                   <div className="flex flex-col gap-2 py-2">
-                    <div className="flex items-center gap-1">
-                      {column.header}
+                    <div 
+                      className="flex items-center gap-1 cursor-pointer select-none group"
+                      onClick={() => handleSort(column.key)}
+                    >
+                      <span className="font-medium group-hover:text-primary transition-colors">
+                        {column.header}
+                      </span>
                       <span className="inline-flex">
                         {sortColumn === column.key ? (
                           <ArrowUp 
@@ -252,7 +255,7 @@ export function DataTable<T extends Record<string, any>>({
                             data-testid={`sort-${sortDirection}-${column.key}`} 
                           />
                         ) : (
-                          <ArrowUp className="h-4 w-4 text-muted-foreground opacity-40" data-testid={`sort-none-${column.key}`} />
+                          <ArrowUp className="h-4 w-4 text-muted-foreground opacity-20 group-hover:opacity-60 transition-opacity" data-testid={`sort-none-${column.key}`} />
                         )}
                       </span>
                     </div>
