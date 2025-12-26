@@ -42,7 +42,7 @@ import { ChalanInvoice } from "@/components/chalan-invoice";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth-context";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import type { ChalanWithItems, Customer, Project, Booking, ChalanRevision } from "@shared/schema";
+import type { ChalanWithItems, Customer, Project, Booking, ChalanRevision, Room, Editor } from "@shared/schema";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface BookingWithRelations extends Booking {
@@ -155,6 +155,14 @@ export default function ChalanPage() {
   const { data: projects = [] } = useQuery<Project[]>({
     queryKey: [`/api/projects?customerId=${selectedCustomerId}`],
     enabled: !!selectedCustomerId,
+  });
+
+  const { data: rooms = [] } = useQuery<Room[]>({
+    queryKey: ["/api/rooms"],
+  });
+
+  const { data: editors = [] } = useQuery<Editor[]>({
+    queryKey: ["/api/editors"],
   });
 
   useEffect(() => {
@@ -393,7 +401,7 @@ export default function ChalanPage() {
     if (booking.breakHours) form.setValue("breakHours", booking.breakHours.toString());
     if (booking.totalHours) form.setValue("totalHours", booking.totalHours.toString());
     
-    const hours = booking.totalHours || 0;
+    const hours = Number(booking.totalHours) || 0;
     const roomName = booking.room?.name || "Room booking";
     const editorName = booking.editor?.name || "";
     const description = editorName 
@@ -473,7 +481,7 @@ export default function ChalanPage() {
     if (editingChalan) {
       updateMutation.mutate({ ...data, id: editingChalan.id });
     } else {
-      createMutation.mutate({ ...data, bookingId: parseInt(selectedBookingId) });
+      createMutation.mutate({ ...data, bookingId: selectedBookingId });
     }
   };
 
@@ -500,23 +508,7 @@ export default function ChalanPage() {
     },
     {
       key: "chalanDate",
-      header: (
-        <div className="flex items-center justify-between gap-2">
-          <span>Date</span>
-          <button
-            onClick={() => setSortOrder(sortOrder === "desc" ? "asc" : "desc")}
-            className="hover:text-foreground text-muted-foreground transition-colors"
-            data-testid="button-sort-date"
-            title={sortOrder === "desc" ? "Sorted by latest first" : "Sorted by oldest first"}
-          >
-            {sortOrder === "desc" ? (
-              <ArrowDown className="h-4 w-4" />
-            ) : (
-              <ArrowUp className="h-4 w-4" />
-            )}
-          </button>
-        </div>
-      ),
+      header: "Date",
       cell: (row) => (
         <span className="font-mono text-sm">
           {format(new Date(row.chalanDate), "PP")}
@@ -785,6 +777,181 @@ export default function ChalanPage() {
                   </FormItem>
                 )}
               />
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="roomId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Room</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Room" 
+                          value={rooms.find(r => r.id === parseInt(field.value || "0"))?.name || ""} 
+                          disabled={true}
+                          data-testid="input-room"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="editorId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Editor</FormLabel>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger data-testid="select-editor">
+                            <SelectValue placeholder="Select editor" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {editors.filter((e) => e.isActive).map((editor) => (
+                            <SelectItem key={editor.id} value={editor.id.toString()}>
+                              {editor.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="fromTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Booking From Time</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="text" 
+                          placeholder="HH:MM" 
+                          {...field}
+                          disabled={true}
+                          data-testid="input-from-time"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="toTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Booking To Time</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="text" 
+                          placeholder="HH:MM" 
+                          {...field}
+                          disabled={true}
+                          data-testid="input-to-time"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="actualFromTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Actual From Time</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="text" 
+                          placeholder="HH:MM" 
+                          {...field}
+                          disabled={true}
+                          data-testid="input-actual-from-time"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="actualToTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Actual To Time</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="text" 
+                          placeholder="HH:MM" 
+                          {...field}
+                          disabled={true}
+                          data-testid="input-actual-to-time"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="breakHours"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Break Hours</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="text" 
+                          placeholder="0" 
+                          {...field}
+                          disabled={true}
+                          data-testid="input-break-hours"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="totalHours"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Total Hours</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="text" 
+                          placeholder="0" 
+                          {...field}
+                          disabled={true}
+                          data-testid="input-total-hours"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <DialogFooter className="gap-2">
                 <Button
