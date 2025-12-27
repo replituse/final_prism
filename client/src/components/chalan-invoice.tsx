@@ -16,6 +16,20 @@ interface ChalanInvoiceProps {
 export function ChalanInvoice({ chalan, onClose, showActions = true, viewOnly = false }: ChalanInvoiceProps) {
   const { company } = useAuth();
 
+  const formatBreakHours = (value: string | number | null | undefined) => {
+    if (!value) return "0.00 hrs/min";
+    const strValue = value.toString();
+    const [hStr, mStr] = strValue.split('.');
+    const hours = parseInt(hStr) || 0;
+    const minutes = parseInt(mStr?.slice(0, 2)) || 0;
+    
+    const totalMinutes = (hours * 60) + minutes;
+    const finalHours = Math.floor(totalMinutes / 60);
+    const finalMins = totalMinutes % 60;
+    
+    return `${finalHours}.${finalMins.toString().padStart(2, '0')} hrs/min`;
+  };
+
   const handlePrint = () => {
     window.print();
   };
@@ -94,15 +108,21 @@ export function ChalanInvoice({ chalan, onClose, showActions = true, viewOnly = 
                           Actual: {chalan.actualFromTime?.slice(0, 5)} - {chalan.actualToTime?.slice(0, 5) || '--:--'}
                         </p>
                       )}
+                      {chalan.breakHours && (
+                        <p className="text-xs font-mono text-muted-foreground">
+                          Break: {formatBreakHours(chalan.breakHours)}
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}
-                {chalan.breakHours && (
+                {/* Remove duplicate break hours display as it's now in Time section */}
+                {/* {chalan.breakHours && (
                   <div>
                     <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Break Hours</p>
                     <p className="text-sm font-medium mt-0.5">{chalan.breakHours} hrs</p>
                   </div>
-                )}
+                )} */}
               </div>
             </div>
 
@@ -137,7 +157,7 @@ export function ChalanInvoice({ chalan, onClose, showActions = true, viewOnly = 
                           ? `${chalan.actualFromTime.slice(0, 5)} - ${chalan.actualToTime.slice(0, 5)}`
                           : "—"}
                       </td>
-                      <td className="px-3 py-2 font-mono">{chalan.breakHours || "0"} hrs</td>
+                      <td className="px-3 py-2 font-mono">{formatBreakHours(chalan.breakHours)}</td>
                       <td className="px-3 py-2 font-mono font-semibold">{chalan.totalHours || "0"} hrs</td>
                     </tr>
                   </tbody>
