@@ -30,6 +30,16 @@ export function ChalanInvoice({ chalan, onClose, showActions = true, viewOnly = 
     return `${finalHours}.${finalMins.toString().padStart(2, '0')} hrs/min`;
   };
 
+  const formatTotalHours = (value: string | number | null | undefined) => {
+    if (!value) return "0.00 hrs";
+    const strValue = value.toString();
+    const [hStr, mStr] = strValue.split('.');
+    const hours = parseInt(hStr) || 0;
+    const minutes = parseInt(mStr?.slice(0, 2)) || 0;
+    
+    return `${hours}.${minutes.toString().padStart(2, '0')} hrs`;
+  };
+
   const handlePrint = () => {
     window.print();
   };
@@ -158,7 +168,7 @@ export function ChalanInvoice({ chalan, onClose, showActions = true, viewOnly = 
                           : "—"}
                       </td>
                       <td className="px-3 py-2 font-mono">{formatBreakHours(chalan.breakHours)}</td>
-                      <td className="px-3 py-2 font-mono font-semibold">{chalan.totalHours || "0"} hrs</td>
+                      <td className="px-3 py-2 font-mono font-semibold">{formatTotalHours(chalan.totalHours)}</td>
                     </tr>
                   </tbody>
                 </table>

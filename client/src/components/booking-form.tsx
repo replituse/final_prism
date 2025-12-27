@@ -239,6 +239,8 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
 
   const updateMutation = useMutation({
     mutationFn: async (data: BookingFormValues) => {
+      // Convert breakHours from HH.mm to a format the server can parse if needed
+      // But we'll keep it as string for now and let the server handle it
       return apiRequest("PATCH", `/api/bookings/${booking?.id}`, {
         roomId: parseInt(data.roomId),
         customerId: parseInt(data.customerId),
@@ -250,7 +252,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
         toTime: data.toTime,
         actualFromTime: data.actualFromTime || null,
         actualToTime: data.actualToTime || null,
-        breakHours: parseFloat(data.breakHours) || 0,
+        breakHours: data.breakHours || "0",
         status: data.status,
         notes: data.notes,
       });

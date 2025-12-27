@@ -63,6 +63,16 @@ function BookingReportContent() {
     ? bookings.filter((b) => b.status !== "cancelled")
     : bookings;
 
+  const formatBreakHours = (value: string | number | null | undefined) => {
+    if (!value) return "0.00";
+    const strValue = value.toString();
+    const [hStr, mStr] = strValue.split('.');
+    const hours = parseInt(hStr) || 0;
+    const minutes = parseInt(mStr?.slice(0, 2)) || 0;
+    
+    return `${hours}.${minutes.toString().padStart(2, '0')}`;
+  };
+
   const handleExport = () => {
     const exportData = filteredBookings.map((b) => ({
       "Date": b.bookingDate,
@@ -74,7 +84,7 @@ function BookingReportContent() {
       "Scheduled To": b.toTime,
       "Actual From": b.actualFromTime || "-",
       "Actual To": b.actualToTime || "-",
-      "Break Hours": b.breakHours || "0",
+      "Break Hours": formatBreakHours(b.breakHours),
       "Total Hours": b.totalHours || "0",
       "Status": b.status,
       "Notes": b.notes || ""
@@ -140,7 +150,7 @@ function BookingReportContent() {
           )}
           {row.breakHours && parseFloat(row.breakHours) > 0 && (
             <div className="font-mono text-xs text-muted-foreground">
-              Break: {row.breakHours} hrs
+              Break: {formatBreakHours(row.breakHours)} hrs
             </div>
           )}
         </div>

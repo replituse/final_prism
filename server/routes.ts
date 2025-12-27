@@ -474,6 +474,38 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
+  // Helper function to calculate total hours from times and break
+  const calculateTotalHours = (from: string | null, to: string | null, breakHours: string | number | null) => {
+    if (!from || !to) return null;
+    
+    try {
+      const [fromH, fromM] = from.split(':').map(Number);
+      const [toH, toM] = to.split(':').map(Number);
+      
+      let diffMinutes = (toH * 60 + toM) - (fromH * 60 + fromM);
+      if (diffMinutes < 0) diffMinutes += 24 * 60; // Handle overnight
+      
+      let breakMinutes = 0;
+      if (breakHours) {
+        const breakStr = breakHours.toString();
+        if (breakStr.includes('.')) {
+          const [bH, bM] = breakStr.split('.').map(Number);
+          breakMinutes = (bH || 0) * 60 + (bM || 0);
+        } else {
+          breakMinutes = Number(breakStr) * 60;
+        }
+      }
+      
+      const totalMinutes = Math.max(0, diffMinutes - breakMinutes);
+      const h = Math.floor(totalMinutes / 60);
+      const m = totalMinutes % 60;
+      
+      return `${h}.${m.toString().padStart(2, '0')}`;
+    } catch (e) {
+      return null;
+    }
+  };
+
   // Customers routes
   app.get("/api/customers", async (req, res) => {
     try {
@@ -758,6 +790,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
         const booking = await storage.createBooking({
           ...data,
           bookingDate: date.toISOString().split("T")[0],
+          totalHours: calculateTotalHours(data.actualFromTime || data.fromTime, data.actualToTime || data.toTime, data.breakHours)
         });
         bookings.push(booking);
       }
@@ -787,7 +820,11 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
         return res.status(403).json({ message: "Cancelled Booking is Read-Only - Modifications are not allowed" });
       }
       
-      const booking = await storage.updateBooking(id, req.body);
+      const bookingData = {
+        ...req.body,
+        totalHours: calculateTotalHours(req.body.actualFromTime || req.body.fromTime, req.body.actualToTime || req.body.toTime, req.body.breakHours)
+      };
+      const booking = await storage.updateBooking(id, bookingData);
       if (!booking) {
         return res.status(404).json({ message: "Booking not found" });
       }
