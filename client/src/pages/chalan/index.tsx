@@ -274,10 +274,10 @@ export default function ChalanPage() {
         roomId: data.roomId ? parseInt(data.roomId) : undefined,
         fromTime: data.fromTime,
         toTime: data.toTime,
-        actualFromTime: data.actualFromTime,
-        actualToTime: data.actualToTime,
-        breakHours: data.breakHours,
-        totalHours: data.totalHours,
+        actualFromTime: data.actualFromTime || null,
+        actualToTime: data.actualToTime || null,
+        breakHours: data.breakHours || "0",
+        totalHours: data.totalHours || "0",
       });
     },
     onSuccess: () => {
@@ -285,15 +285,15 @@ export default function ChalanPage() {
         typeof query.queryKey[0] === 'string' && (query.queryKey[0].startsWith('/api/chalans') || query.queryKey[0] === '/api/bookings')
       });
       toast({ 
-        title: "Chalan Generated", 
-        description: "The chalan has been created and logged successfully.",
+        title: "Chalan Generated Successfully", 
+        description: "The new chalan has been created and logged.",
         variant: "success"
       });
       handleCloseDialog();
     },
     onError: (error: any) => {
       toast({
-        title: "Error creating chalan",
+        title: "Unable to Create Chalan",
         description: error.message,
         variant: "destructive",
       });
@@ -326,10 +326,10 @@ export default function ChalanPage() {
         roomId: data.roomId ? parseInt(data.roomId) : undefined,
         fromTime: data.fromTime,
         toTime: data.toTime,
-        actualFromTime: data.actualFromTime,
-        actualToTime: data.actualToTime,
-        breakHours: data.breakHours,
-        totalHours: data.totalHours,
+        actualFromTime: data.actualFromTime || null,
+        actualToTime: data.actualToTime || null,
+        breakHours: data.breakHours || "0",
+        totalHours: data.totalHours || "0",
       });
     },
     onSuccess: () => {
@@ -337,15 +337,15 @@ export default function ChalanPage() {
         typeof query.queryKey[0] === 'string' && query.queryKey[0].startsWith('/api/chalans')
       });
       toast({ 
-        title: "Chalan Updated", 
-        description: "The chalan modifications have been saved successfully.",
+        title: "Chalan Updated Successfully", 
+        description: "The chalan modifications have been saved.",
         variant: "success"
       });
       handleCloseDialog();
     },
     onError: (error: any) => {
       toast({
-        title: "Error updating chalan",
+        title: "Unable to Update Chalan",
         description: error.message,
         variant: "destructive",
       });
@@ -361,7 +361,7 @@ export default function ChalanPage() {
         typeof query.queryKey[0] === 'string' && (query.queryKey[0].startsWith('/api/chalans') || query.queryKey[0] === '/api/bookings')
       });
       toast({ 
-        title: "Chalan Deleted", 
+        title: "Chalan Deleted Successfully", 
         description: "The chalan record has been permanently removed.",
         variant: "destructive"
       });
@@ -369,7 +369,7 @@ export default function ChalanPage() {
     },
     onError: (error: any) => {
       toast({
-        title: "Error deleting chalan",
+        title: "Unable to Delete Chalan",
         description: error.message,
         variant: "destructive",
       });
@@ -385,12 +385,14 @@ export default function ChalanPage() {
         typeof query.queryKey[0] === 'string' && query.queryKey[0].startsWith('/api/chalans')
       });
       toast({ 
-        title: variables.isCancelled ? "Chalan cancelled" : "Chalan reactivated",
+        title: variables.isCancelled ? "Chalan Cancelled" : "Chalan Reactivated",
+        description: variables.isCancelled ? "The chalan has been marked as cancelled." : "The chalan has been restored to active status.",
+        variant: variables.isCancelled ? "warning" : "success"
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Error updating status",
+        title: "Unable to Update Status",
         description: error.message,
         variant: "destructive",
       });
