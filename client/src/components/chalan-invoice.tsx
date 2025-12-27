@@ -41,7 +41,7 @@ export function ChalanInvoice({ chalan, onClose, showActions = true, viewOnly = 
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-6 mb-4 items-start">
+            <div className="grid grid-cols-2 gap-6 mb-4 items-start">
               <div className="space-y-3">
                 <div>
                   <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Bill To</p>
@@ -56,6 +56,18 @@ export function ChalanInvoice({ chalan, onClose, showActions = true, viewOnly = 
                 <div>
                   <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Project</p>
                   <p className="text-sm font-medium mt-0.5">{chalan.project?.name}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Status</p>
+                  <div className="mt-0.5">
+                    {chalan.isCancelled ? (
+                      <Badge variant="destructive" className="text-xs">CANCELLED</Badge>
+                    ) : chalan.isRevised ? (
+                      <Badge variant="secondary" className="text-xs">REVISED</Badge>
+                    ) : (
+                      <Badge variant="default" className="text-xs">ACTIVE</Badge>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -91,21 +103,6 @@ export function ChalanInvoice({ chalan, onClose, showActions = true, viewOnly = 
                     <p className="text-sm font-medium mt-0.5">{chalan.breakHours} hrs</p>
                   </div>
                 )}
-              </div>
-
-              <div className="space-y-3 text-right">
-                <div>
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Status</p>
-                  <div className="mt-0.5">
-                    {chalan.isCancelled ? (
-                      <Badge variant="destructive" className="text-xs">CANCELLED</Badge>
-                    ) : chalan.isRevised ? (
-                      <Badge variant="secondary" className="text-xs">REVISED</Badge>
-                    ) : (
-                      <Badge variant="default" className="text-xs">ACTIVE</Badge>
-                    )}
-                  </div>
-                </div>
               </div>
             </div>
 
