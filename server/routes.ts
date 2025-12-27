@@ -966,6 +966,17 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
         });
       }
       
+      // Calculate total hours using fixed HH.mm logic
+      const totalHours = calculateTotalHours(
+        chalanData.actualFromTime || chalanData.fromTime,
+        chalanData.actualToTime || chalanData.toTime,
+        chalanData.breakHours || "0"
+      );
+      
+      if (totalHours !== null) {
+        chalanData.totalHours = parseFloat(totalHours);
+      }
+      
       const chalan = await storage.createChalan(data, items || []);
       res.status(201).json(chalan);
     } catch (error: any) {
@@ -1048,13 +1059,24 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
       // Check if chalan is cancelled - cancelled chalans are read-only
       const existingChalan = await storage.getChalan(id);
       if (!existingChalan) {
-        return res.status(404).json({ message: "Chalan not found" });
+        return res.status(404).json({ message: "Chalan found" });
       }
       if (existingChalan.isCancelled) {
         return res.status(403).json({ message: "Cancelled Chalan is Read-Only - Modifications are not allowed" });
       }
       
       const { items, ...chalanData } = req.body;
+      
+      // Calculate total hours using fixed HH.mm logic
+      const totalHours = calculateTotalHours(
+        chalanData.actualFromTime || chalanData.fromTime || existingChalan.actualFromTime || existingChalan.fromTime,
+        chalanData.actualToTime || chalanData.toTime || existingChalan.actualToTime || existingChalan.toTime,
+        chalanData.breakHours !== undefined ? chalanData.breakHours : (existingChalan.breakHours || "0")
+      );
+      
+      if (totalHours !== null) {
+        chalanData.totalHours = parseFloat(totalHours);
+      }
       
       // Check if trying to change bookingId to a value that's already used by another chalan
       if (chalanData.bookingId && chalanData.bookingId !== existingChalan.bookingId) {
