@@ -432,10 +432,10 @@ export default function ChalanPage() {
     // Auto-populate time fields from booking
     if (booking.fromTime) form.setValue("fromTime", booking.fromTime);
     if (booking.toTime) form.setValue("toTime", booking.toTime);
-    if (booking.actualFromTime) form.setValue("actualFromTime", booking.actualFromTime);
-    if (booking.actualToTime) form.setValue("actualToTime", booking.actualToTime);
-    if (booking.breakHours) form.setValue("breakHours", booking.breakHours.toString());
-    if (booking.totalHours) form.setValue("totalHours", booking.totalHours.toString());
+    form.setValue("actualFromTime", booking.actualFromTime || "");
+    form.setValue("actualToTime", booking.actualToTime || "");
+    form.setValue("breakHours", booking.breakHours?.toString() || "");
+    form.setValue("totalHours", booking.totalHours?.toString() || "");
     
     const hours = Number(booking.totalHours) || 0;
     const roomName = booking.room?.name || "Room booking";

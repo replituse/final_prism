@@ -968,8 +968,8 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
       
       // Calculate total hours using fixed HH.mm logic
       const totalHours = calculateTotalHours(
-        chalanData.actualFromTime || chalanData.fromTime,
-        chalanData.actualToTime || chalanData.toTime,
+        chalanData.actualFromTime || chalanData.fromTime || "",
+        chalanData.actualToTime || chalanData.toTime || "",
         chalanData.breakHours || "0"
       );
       
@@ -1069,9 +1069,9 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
       
       // Calculate total hours using fixed HH.mm logic
       const totalHours = calculateTotalHours(
-        chalanData.actualFromTime || chalanData.fromTime || existingChalan.actualFromTime || existingChalan.fromTime,
-        chalanData.actualToTime || chalanData.toTime || existingChalan.actualToTime || existingChalan.toTime,
-        chalanData.breakHours !== undefined ? chalanData.breakHours : (existingChalan.breakHours || "0")
+        chalanData.actualFromTime || chalanData.fromTime || existingChalan.actualFromTime || existingChalan.fromTime || "",
+        chalanData.actualToTime || chalanData.toTime || existingChalan.actualToTime || existingChalan.toTime || "",
+        chalanData.breakHours !== undefined ? (chalanData.breakHours || "0") : (existingChalan.breakHours || "0")
       );
       
       if (totalHours !== null) {
