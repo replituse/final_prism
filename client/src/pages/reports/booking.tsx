@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format, startOfMonth, endOfMonth } from "date-fns";
-import { CalendarDays, Download, Clock, Building, User, FileText } from "lucide-react";
+import { CalendarDays, Download, Clock, Building, User, FileText, FileSpreadsheet } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { exportToExcel } from "@/lib/export-utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -63,19 +64,23 @@ function BookingReportContent() {
     : bookings;
 
   const handleExport = () => {
-    const csvContent = filteredBookings.map((b) =>
-      `${b.bookingDate},${b.customer?.name},${b.project?.name},${b.room?.name},${b.fromTime}-${b.toTime},${b.status}`
-    ).join("\n");
+    const exportData = filteredBookings.map((b) => ({
+      "Date": b.bookingDate,
+      "Customer": b.customer?.name || "-",
+      "Project": b.project?.name || "-",
+      "Room": b.room?.name || "-",
+      "Editor": b.editor?.name || "-",
+      "Scheduled From": b.fromTime,
+      "Scheduled To": b.toTime,
+      "Actual From": b.actualFromTime || "-",
+      "Actual To": b.actualToTime || "-",
+      "Break Hours": b.breakHours || "0",
+      "Total Hours": b.totalHours || "0",
+      "Status": b.status,
+      "Notes": b.notes || ""
+    }));
 
-    const blob = new Blob(
-      [`Date,Customer,Project,Room,Time,Status\n${csvContent}`],
-      { type: "text/csv" }
-    );
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `booking-report-${fromDate}-${toDate}.csv`;
-    a.click();
+    exportToExcel(exportData, `booking-report-${fromDate}-${toDate}`);
   };
 
   const statusColors = {
@@ -259,8 +264,8 @@ function BookingReportContent() {
                   disabled={filteredBookings.length === 0}
                   data-testid="button-export"
                 >
-                  <Download className="h-4 w-4 mr-2" />
-                  Export CSV
+                  <FileSpreadsheet className="h-4 w-4 mr-2" />
+                  Export Excel
                 </Button>
               </CardContent>
             </Card>

@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { format, startOfMonth, endOfMonth } from "date-fns";
-import { AlertTriangle, Calendar, Download, Clock, Building, User, Check, X, Pencil } from "lucide-react";
+import { AlertTriangle, Calendar, Download, Clock, Building, User, Check, X, Pencil, FileSpreadsheet } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { exportToExcel } from "@/lib/export-utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -90,17 +91,41 @@ function ConflictReportContent() {
     setBookingFormOpen(true);
   };
 
+  const filteredConflicts = conflicts.filter(c => {
+    const dateMatch = !columnFilters.date || format(new Date(c.booking1.bookingDate), "PPP").toLowerCase().includes(columnFilters.date.toLowerCase());
+    const roomMatch = !columnFilters.room || (c.booking1.room?.name || "").toLowerCase().includes(columnFilters.room.toLowerCase());
+    const customerMatch = !columnFilters.customer || (c.booking1.customer?.name || "").toLowerCase().includes(columnFilters.customer.toLowerCase()) || (c.booking2.customer?.name || "").toLowerCase().includes(columnFilters.customer.toLowerCase());
+    const projectMatch = !columnFilters.project || (c.booking1.project?.name || "").toLowerCase().includes(columnFilters.project.toLowerCase()) || (c.booking2.project?.name || "").toLowerCase().includes(columnFilters.project.toLowerCase());
+    return dateMatch && roomMatch && customerMatch && projectMatch;
+  });
+
   const handleExport = () => {
-    const csvContent = conflicts.map(c => 
-      `${c.booking1.bookingDate},${c.booking1.room?.name},${c.booking1.fromTime}-${c.booking1.toTime},${c.booking1.customer?.name},${c.booking2.customer?.name}`
-    ).join("\n");
-    
-    const blob = new Blob([`Date,Room,Time,Booking 1,Booking 2\n${csvContent}`], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `conflict-report-${fromDate}-${toDate}.csv`;
-    a.click();
+    const exportData = filteredConflicts.flatMap((c, index) => [
+      {
+        "Conflict Group": index + 1,
+        "Booking": "Booking 1",
+        "Date": c.booking1.bookingDate,
+        "Room": c.booking1.room?.name || "-",
+        "Customer": c.booking1.customer?.name || "-",
+        "Project": c.booking1.project?.name || "-",
+        "Scheduled Time": `${c.booking1.fromTime}-${c.booking1.toTime}`,
+        "Actual Time": `${c.booking1.actualFromTime || "-"}-${c.booking1.actualToTime || "-"}`,
+        "Status": c.booking1.status
+      },
+      {
+        "Conflict Group": index + 1,
+        "Booking": "Booking 2",
+        "Date": c.booking2.bookingDate,
+        "Room": c.booking2.room?.name || "-",
+        "Customer": c.booking2.customer?.name || "-",
+        "Project": c.booking2.project?.name || "-",
+        "Scheduled Time": `${c.booking2.fromTime}-${c.booking2.toTime}`,
+        "Actual Time": `${c.booking2.actualFromTime || "-"}-${c.booking2.actualToTime || "-"}`,
+        "Status": c.booking2.status
+      }
+    ]);
+
+    exportToExcel(exportData, `conflict-report-${fromDate}-${toDate}`);
   };
 
   return (
@@ -175,8 +200,8 @@ function ConflictReportContent() {
                   disabled={conflicts.length === 0}
                   data-testid="button-export"
                 >
-                  <Download className="h-4 w-4 mr-2" />
-                  Export CSV
+                  <FileSpreadsheet className="h-4 w-4 mr-2" />
+                  Export Excel
                 </Button>
               </CardContent>
             </Card>
@@ -241,14 +266,7 @@ function ConflictReportContent() {
                     />
                   </div>
                 </Card>
-                {conflicts
-                  .filter(c => {
-                    const dateMatch = !columnFilters.date || format(new Date(c.booking1.bookingDate), "PPP").toLowerCase().includes(columnFilters.date.toLowerCase());
-                    const roomMatch = !columnFilters.room || (c.booking1.room?.name || "").toLowerCase().includes(columnFilters.room.toLowerCase());
-                    const customerMatch = !columnFilters.customer || (c.booking1.customer?.name || "").toLowerCase().includes(columnFilters.customer.toLowerCase()) || (c.booking2.customer?.name || "").toLowerCase().includes(columnFilters.customer.toLowerCase());
-                    const projectMatch = !columnFilters.project || (c.booking1.project?.name || "").toLowerCase().includes(columnFilters.project.toLowerCase()) || (c.booking2.project?.name || "").toLowerCase().includes(columnFilters.project.toLowerCase());
-                    return dateMatch && roomMatch && customerMatch && projectMatch;
-                  })
+                {filteredConflicts
                   .map((conflict, index) => (
                   <Card key={index} className="border-l-4 border-l-destructive">
                     <CardContent className="pt-4">

@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { format, startOfMonth, endOfMonth } from "date-fns";
 import { FileSpreadsheet, Download, Eye, Pencil, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { exportToExcel } from "@/lib/export-utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -56,19 +57,25 @@ function ChalanReportContent() {
     : chalans.filter((c) => !c.isCancelled);
 
   const handleExport = () => {
-    const csvContent = filteredChalans.map((c) =>
-      `${c.chalanNumber},${c.customer?.name},${c.project?.name},${c.chalanDate},${c.totalAmount},${c.isCancelled ? "Cancelled" : "Active"}`
-    ).join("\n");
+    const exportData = filteredChalans.map((c) => ({
+      "Chalan No": c.chalanNumber,
+      "Date": c.chalanDate,
+      "Customer": c.customer?.name || "-",
+      "Project": c.project?.name || "-",
+      "Editor": c.editor?.name || c.booking?.editor?.name || "-",
+      "Room": c.booking?.room?.name || "-",
+      "From Time": c.fromTime || "-",
+      "To Time": c.toTime || "-",
+      "Actual From": c.actualFromTime || "-",
+      "Actual To": c.actualToTime || "-",
+      "Break Hours": c.breakHours || "0",
+      "Total Hours": c.totalHours || "0",
+      "Amount": c.totalAmount,
+      "Status": c.isCancelled ? "Cancelled" : "Active",
+      "Notes": c.notes || ""
+    }));
 
-    const blob = new Blob(
-      [`Chalan No,Customer,Project,Date,Amount,Status\n${csvContent}`],
-      { type: "text/csv" }
-    );
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `chalan-report-${fromDate}-${toDate}.csv`;
-    a.click();
+    exportToExcel(exportData, `chalan-report-${fromDate}-${toDate}`);
   };
 
   const handleViewChalan = (chalan: ChalanWithItems) => {
@@ -207,8 +214,8 @@ function ChalanReportContent() {
                   disabled={filteredChalans.length === 0}
                   data-testid="button-export"
                 >
-                  <Download className="h-4 w-4 mr-2" />
-                  Export CSV
+                  <FileSpreadsheet className="h-4 w-4 mr-2" />
+                  Export Excel
                 </Button>
               </CardContent>
             </Card>
