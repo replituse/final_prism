@@ -52,7 +52,7 @@ import type { CustomerWithContacts, Customer, CustomerContact, Designation } fro
 
 const contactSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  phone: z.string().optional(),
+  phone: z.string().regex(/^\d{10}$/, "Phone number must be exactly 10 digits").optional().or(z.literal("")),
   email: z.string().email().optional().or(z.literal("")),
   designation: z.string().optional(),
   isPrimary: z.boolean().default(false),
@@ -62,7 +62,7 @@ const customerFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
   companyName: z.string().optional(),
   address: z.string().optional(),
-  phone: z.string().optional(),
+  phone: z.string().regex(/^\d{10}$/, "Phone number must be exactly 10 digits").optional().or(z.literal("")),
   email: z.string().email().optional().or(z.literal("")),
   gstNumber: z.string().optional(),
   isActive: z.boolean().default(true),
@@ -446,19 +446,26 @@ export default function CustomersPage() {
               />
 
               <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Phone</FormLabel>
-                      <FormControl>
-                        <Input data-testid="input-phone" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Phone</FormLabel>
+                        <FormControl>
+                          <Input 
+                            data-testid="input-phone" 
+                            {...field} 
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/\D/g, "").slice(0, 10);
+                              field.onChange(value);
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
                 <FormField
                   control={form.control}
@@ -643,7 +650,14 @@ export default function CustomersPage() {
                             <FormItem>
                               <FormLabel>Phone</FormLabel>
                               <FormControl>
-                                <Input data-testid={`input-contact-phone-${index}`} {...field} />
+                                <Input 
+                                  data-testid={`input-contact-phone-${index}`} 
+                                  {...field} 
+                                  onChange={(e) => {
+                                    const value = e.target.value.replace(/\D/g, "").slice(0, 10);
+                                    field.onChange(value);
+                                  }}
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>

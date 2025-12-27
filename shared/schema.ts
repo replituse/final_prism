@@ -347,15 +347,15 @@ export const insertCompanySchema = createInsertSchema(companies).omit({ id: true
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertDesignationSchema = createInsertSchema(designations).omit({ id: true, createdAt: true });
 export const insertCustomerSchema = createInsertSchema(customers).omit({ id: true, createdAt: true }).extend({
-  phone: z.string().regex(/^\d{10}$/, "Mobile number must be exactly 10 digits"),
+  phone: z.string().regex(/^\d{10}$/, "Phone number must be exactly 10 digits").optional().or(z.literal("")),
 });
 export const insertCustomerContactSchema = createInsertSchema(customerContacts).omit({ id: true }).extend({
-  phone: z.string().regex(/^\d{10}$/, "Mobile number must be exactly 10 digits").optional().or(z.literal("")),
+  phone: z.string().regex(/^\d{10}$/, "Phone number must be exactly 10 digits").optional().or(z.literal("")),
 });
 export const insertProjectSchema = createInsertSchema(projects).omit({ id: true, createdAt: true });
 export const insertRoomSchema = createInsertSchema(rooms).omit({ id: true, createdAt: true });
 export const insertEditorSchema = createInsertSchema(editors).omit({ id: true, createdAt: true }).extend({
-  phone: z.string().regex(/^\d{10}$/, "Mobile number must be exactly 10 digits"),
+  phone: z.string().regex(/^\d{10}$/, "Phone number must be exactly 10 digits").optional().or(z.literal("")),
 });
 export const insertBookingSchema = createInsertSchema(bookings).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertBookingLogSchema = createInsertSchema(bookingLogs).omit({ id: true, createdAt: true });
