@@ -53,7 +53,7 @@ const EDITOR_TYPES = [
 const editorFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
   editorType: z.enum(["video", "audio", "vfx", "colorist", "di"]),
-  phone: z.string().regex(/^\d{10}$/, "Phone number must be exactly 10 digits").optional().or(z.literal("")),
+  phone: z.string().regex(/^\d{10}$/, "Phone number must be exactly 10 digits"),
   email: z.string().email().optional().or(z.literal("")),
   joinDate: z.string().optional(),
   leaveDate: z.string().optional(),
@@ -417,7 +417,7 @@ export default function EditorsPage() {
                   name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Phone</FormLabel>
+                      <FormLabel>Phone *</FormLabel>
                       <FormControl>
                         <Input 
                           data-testid="input-phone" 

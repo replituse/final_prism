@@ -635,6 +635,14 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
   app.post("/api/rooms", requirePermission("rooms", "canCreate"), async (req, res) => {
     try {
       const data = insertRoomSchema.parse(req.body);
+      const existingRooms = await storage.getRooms();
+      const duplicate = existingRooms.find(r => 
+        r.name.toLowerCase() === data.name.toLowerCase() && 
+        r.roomType === data.roomType
+      );
+      if (duplicate) {
+        return res.status(400).json({ message: `A room with name "${data.name}" and type "${data.roomType}" already exists. Change either room name or room type.` });
+      }
       const room = await storage.createRoom(data);
       res.status(201).json(room);
     } catch (error: any) {
@@ -645,6 +653,15 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
   app.patch("/api/rooms/:id", requirePermission("rooms", "canEdit"), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      const existingRooms = await storage.getRooms();
+      const duplicate = existingRooms.find(r => 
+        r.id !== id && 
+        r.name.toLowerCase() === req.body.name.toLowerCase() && 
+        r.roomType === req.body.roomType
+      );
+      if (duplicate) {
+        return res.status(400).json({ message: `A room with name "${req.body.name}" and type "${req.body.roomType}" already exists. Change either room name or room type.` });
+      }
       const room = await storage.updateRoom(id, req.body);
       if (!room) {
         return res.status(404).json({ message: "Room not found" });

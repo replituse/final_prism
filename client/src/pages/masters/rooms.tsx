@@ -85,6 +85,10 @@ export default function RoomsPage() {
 
   const createMutation = useMutation({
     mutationFn: async (data: RoomFormValues) => {
+      const duplicate = rooms.find(r => r.name.toLowerCase() === data.name.toLowerCase() && r.roomType === data.roomType);
+      if (duplicate) {
+        throw new Error(`A room with name "${data.name}" and type "${ROOM_TYPES.find(t => t.value === data.roomType)?.label}" already exists. Change either room name or room type.`);
+      }
       return apiRequest("POST", "/api/rooms", {
         ...data,
         capacity: data.capacity ? parseInt(data.capacity) : 1,
@@ -110,6 +114,14 @@ export default function RoomsPage() {
 
   const updateMutation = useMutation({
     mutationFn: async (data: RoomFormValues) => {
+      const duplicate = rooms.find(r => 
+        r.id !== editingRoom?.id && 
+        r.name.toLowerCase() === data.name.toLowerCase() && 
+        r.roomType === data.roomType
+      );
+      if (duplicate) {
+        throw new Error(`A room with name "${data.name}" and type "${ROOM_TYPES.find(t => t.value === data.roomType)?.label}" already exists. Change either room name or room type.`);
+      }
       return apiRequest("PATCH", `/api/rooms/${editingRoom?.id}`, {
         ...data,
         capacity: data.capacity ? parseInt(data.capacity) : 1,
