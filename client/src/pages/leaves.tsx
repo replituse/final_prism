@@ -38,8 +38,8 @@ import { DataTable, Column } from "@/components/data-table";
 import { EmptyState } from "@/components/empty-state";
 import { PagePermissionGuard, PermissionGuard } from "@/components/permission-guard";
 import { usePermissions } from "@/lib/permissions";
-import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { showSuccessMessage, showErrorMessage, messages } from "@/lib/messages";
 import type { EditorLeave, Editor } from "@shared/schema";
 
 const leaveFormSchema = z.object({
@@ -55,7 +55,6 @@ type LeaveWithEditor = EditorLeave & { editor?: Editor };
 
 function LeavesContent() {
   const { canCreate, canEdit, canDelete } = usePermissions();
-  const { toast } = useToast();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLeave, setEditingLeave] = useState<LeaveWithEditor | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -99,18 +98,13 @@ function LeavesContent() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/editor-leaves"] });
-      toast({ 
-        title: "Leave Added Successfully", 
-        description: "The leave record has been created.",
-        variant: "success"
-      });
+      showSuccessMessage(messages.success.created("Leave"));
       handleCloseDialog();
     },
     onError: (error: any) => {
-      toast({
-        title: "Unable to Add Leave",
+      showErrorMessage({
+        title: messages.error.create("Leave").title,
         description: error.message,
-        variant: "destructive",
       });
     },
   });
@@ -126,18 +120,13 @@ function LeavesContent() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/editor-leaves"] });
-      toast({ 
-        title: "Leave Updated Successfully", 
-        description: "The leave information has been updated.",
-        variant: "success"
-      });
+      showSuccessMessage(messages.success.updated("Leave"));
       handleCloseDialog();
     },
     onError: (error: any) => {
-      toast({
-        title: "Unable to Update Leave",
+      showErrorMessage({
+        title: messages.error.update("Leave").title,
         description: error.message,
-        variant: "destructive",
       });
     },
   });
@@ -148,18 +137,13 @@ function LeavesContent() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/editor-leaves"] });
-      toast({ 
-        title: "Leave Deleted Successfully", 
-        description: "The leave record has been removed.",
-        variant: "destructive"
-      });
+      showErrorMessage(messages.error.delete("Leave"));
       setDeleteDialogOpen(false);
     },
     onError: (error: any) => {
-      toast({
-        title: "Unable to Delete Leave",
+      showErrorMessage({
+        title: messages.error.delete("Leave").title,
         description: error.message,
-        variant: "destructive",
       });
     },
   });

@@ -10,10 +10,10 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth-context";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { apiRequest } from "@/lib/queryClient";
+import { showSuccessMessage, showErrorMessage, messages } from "@/lib/messages";
 import type { Company } from "@shared/schema";
 import productionBg from "@assets/stock_images/film_production_stud_a0473fe5.jpg";
 
@@ -28,7 +28,6 @@ type LoginForm = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const [, setLocation] = useLocation();
   const { login } = useAuth();
-  const { toast } = useToast();
   const [showPin, setShowPin] = useState(false);
 
   const { data: companies = [] } = useQuery<Company[]>({
@@ -73,17 +72,13 @@ export default function LoginPage() {
         throw new Error("Invalid response from server");
       }
       login(data.user, data.company || null);
-      toast({
-        title: "Welcome back!",
-        description: `Logged in as ${data.user.username}`,
-      });
+      showSuccessMessage(messages.success.loggedIn(data.user.username));
       setLocation("/");
     },
     onError: (error: any) => {
-      toast({
-        title: "Login failed",
-        description: error.message || "Invalid credentials",
-        variant: "destructive",
+      showErrorMessage({
+        title: messages.error.login().title,
+        description: error.message || messages.error.login().description,
       });
     },
   });

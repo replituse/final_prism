@@ -60,8 +60,8 @@ import { BookingForm } from "@/components/booking-form";
 import { PagePermissionGuard } from "@/components/permission-guard";
 import { usePermissions } from "@/lib/permissions";
 import { useAuth } from "@/lib/auth-context";
-import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { showSuccessMessage, showErrorMessage, messages } from "@/lib/messages";
 import { cn } from "@/lib/utils";
 import type { BookingWithRelations, Room, Chalan } from "@shared/schema";
 
@@ -79,7 +79,6 @@ function BookingContent() {
   const { canCreate, canEdit, canDelete } = usePermissions();
   const [, navigate] = useLocation();
   const { selectedDate, setSelectedDate } = useAuth();
-  const { toast } = useToast();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [hideCancelled, setHideCancelled] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<string>("all");
@@ -141,16 +140,15 @@ function BookingContent() {
       queryClient.invalidateQueries({ predicate: (query) => 
         typeof query.queryKey[0] === 'string' && query.queryKey[0].startsWith('/api/bookings')
       });
-      toast({ title: "Booking cancelled successfully" });
+      showSuccessMessage(messages.success.deleted("Booking"));
       setCancelDialogOpen(false);
       setCancellingBooking(null);
       setCancelReason("");
     },
     onError: (error: any) => {
-      toast({
-        title: "Error cancelling booking",
+      showErrorMessage({
+        title: messages.error.delete("Booking").title,
         description: error.message,
-        variant: "destructive",
       });
     },
   });
