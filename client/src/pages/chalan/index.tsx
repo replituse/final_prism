@@ -521,7 +521,6 @@ export default function ChalanPage() {
       };
 
       form.reset({
-        id: chalan.id,
         customerId: chalan.customerId.toString(),
         projectId: chalan.projectId?.toString() || "",
         chalanDate: chalan.chalanDate,
