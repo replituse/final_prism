@@ -154,7 +154,7 @@ export default function ChalanPage() {
 
   const { data: projects = [] } = useQuery<Project[]>({
     queryKey: [`/api/projects?customerId=${selectedCustomerId}`],
-    enabled: !!selectedCustomerId,
+    enabled: true, // Always allow fetching projects, or fetch all if no customer selected
   });
 
   const { data: rooms = [] } = useQuery<Room[]>({
@@ -437,7 +437,13 @@ export default function ChalanPage() {
     
     // Auto-fill all fields immediately
     form.setValue("customerId", booking.customerId.toString());
-    form.setValue("projectId", booking.projectId.toString(), { shouldValidate: true, shouldDirty: true });
+    
+    // Use a small timeout to ensure the projects query (which depends on customerId) 
+    // has a chance to start or at least be prepared before we set the projectId
+    setTimeout(() => {
+      form.setValue("projectId", booking.projectId.toString(), { shouldValidate: true, shouldDirty: true });
+    }, 100);
+
     form.setValue("chalanDate", booking.bookingDate);
     form.setValue("notes", booking.notes || "");
     form.setValue("roomId", booking.roomId.toString());
@@ -784,11 +790,13 @@ export default function ChalanPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {projects.map((project) => (
-                            <SelectItem key={project.id} value={project.id.toString()}>
-                              {project.name}
-                            </SelectItem>
-                          ))}
+                          {projects
+                            .filter(p => !selectedCustomerId || p.customerId === parseInt(selectedCustomerId))
+                            .map((project) => (
+                              <SelectItem key={project.id} value={project.id.toString()}>
+                                {project.name}
+                              </SelectItem>
+                            ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
