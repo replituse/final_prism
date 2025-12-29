@@ -1,3 +1,9 @@
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -558,20 +564,68 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
               <FormField
                 control={form.control}
                 name="breakHours"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Break Hrs</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="text" 
-                        data-testid="input-break-hours"
-                        disabled={isFormDisabled}
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  const [hours, minutes] = (field.value || "00:00").split(/:|[\.]/).map(v => v?.padStart(2, '0') || "00");
+                  
+                  return (
+                    <FormItem>
+                      <FormLabel>Break Hrs</FormLabel>
+                      <FormControl>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className="w-full justify-start text-left font-normal"
+                              disabled={isFormDisabled}
+                              data-testid="button-break-hours-trigger"
+                            >
+                              {hours}:{minutes}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-48 p-0" align="start">
+                            <div className="flex h-48">
+                              <ScrollArea className="flex-1 border-r">
+                                <div className="p-2">
+                                  {Array.from({ length: 24 }).map((_, i) => {
+                                    const h = i.toString().padStart(2, '0');
+                                    return (
+                                      <Button
+                                        key={h}
+                                        variant="ghost"
+                                        className={`w-full justify-center ${hours === h ? "bg-accent" : ""}`}
+                                        onClick={() => field.onChange(`${h}:${minutes}`)}
+                                      >
+                                        {h}
+                                      </Button>
+                                    );
+                                  })}
+                                </div>
+                              </ScrollArea>
+                              <ScrollArea className="flex-1">
+                                <div className="p-2">
+                                  {Array.from({ length: 60 }).map((_, i) => {
+                                    const m = i.toString().padStart(2, '0');
+                                    return (
+                                      <Button
+                                        key={m}
+                                        variant="ghost"
+                                        className={`w-full justify-center ${minutes === m ? "bg-accent" : ""}`}
+                                        onClick={() => field.onChange(`${hours}:${m}`)}
+                                      >
+                                        {m}
+                                      </Button>
+                                    );
+                                  })}
+                                </div>
+                              </ScrollArea>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
             </div>
 
