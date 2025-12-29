@@ -151,7 +151,7 @@ export const chalans = pgTable("chalans", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   chalanNumber: text("chalan_number").notNull().unique(),
   customerId: integer("customer_id").references(() => customers.id).notNull(),
-  projectId: integer("project_id").references(() => projects.id).notNull(),
+  projectId: integer("project_id").references(() => projects.id),
   bookingId: integer("booking_id").references(() => bookings.id),
   chalanDate: date("chalan_date").notNull(),
   totalAmount: text("total_amount").default("0"),

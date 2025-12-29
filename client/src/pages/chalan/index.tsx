@@ -60,7 +60,7 @@ const chalanItemSchema = z.object({
 
 const chalanFormSchema = z.object({
   customerId: z.string().min(1, "Customer is required"),
-  projectId: z.string().min(1, "Project is required"),
+  projectId: z.string().optional().nullable().or(z.literal("")),
   chalanDate: z.string().min(1, "Date is required"),
   notes: z.string().optional(),
   items: z.array(chalanItemSchema).min(1, "At least one item is required"),
@@ -264,7 +264,7 @@ export default function ChalanPage() {
 
       return apiRequest("POST", "/api/chalans", {
         customerId: parseInt(data.customerId),
-        projectId: parseInt(data.projectId),
+        projectId: data.projectId ? parseInt(data.projectId) : null,
         chalanDate: data.chalanDate,
         notes: data.notes,
         totalAmount: totalAmount.toString(),
@@ -317,7 +317,7 @@ export default function ChalanPage() {
 
       return apiRequest("PATCH", `/api/chalans/${data.id}`, {
         customerId: parseInt(data.customerId),
-        projectId: parseInt(data.projectId),
+        projectId: data.projectId ? parseInt(data.projectId) : null,
         chalanDate: data.chalanDate,
         notes: data.notes,
         totalAmount: totalAmount.toString(),
@@ -772,10 +772,10 @@ export default function ChalanPage() {
                   name="projectId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Project *</FormLabel>
+                      <FormLabel>Project</FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        value={field.value}
+                        value={field.value || ""}
                         disabled={!!selectedBookingId || !!editingChalan || !selectedCustomerId}
                       >
                         <FormControl>
