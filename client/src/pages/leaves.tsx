@@ -252,25 +252,7 @@ function LeavesContent() {
           />
         ) : (
           <div className="space-y-4">
-            <div className="flex justify-between items-center gap-2 flex-wrap">
-              <Button 
-                variant="outline"
-                size="sm"
-                onClick={() => setSortOrder(sortOrder === "desc" ? "asc" : "desc")}
-                data-testid="button-sort-date"
-              >
-                {sortOrder === "desc" ? (
-                  <>
-                    <ArrowDown className="h-4 w-4 mr-2" />
-                    Latest First
-                  </>
-                ) : (
-                  <>
-                    <ArrowUp className="h-4 w-4 mr-2" />
-                    Oldest First
-                  </>
-                )}
-              </Button>
+            <div className="flex justify-end items-center gap-2 flex-wrap">
               <Button onClick={() => handleOpenDialog()} data-testid="button-add-leave">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Leave
