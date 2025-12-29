@@ -268,6 +268,14 @@ export default function ChalanPage() {
       });
       const totalAmount = items.reduce((sum, item) => sum + parseFloat(item.amount), 0);
 
+      // Convert HH:mm to decimal for database numeric type
+      const hhmmToDecimal = (val: string | undefined | null) => {
+        if (!val) return "0";
+        if (!val.includes(":")) return val;
+        const [h, m] = val.split(":").map(Number);
+        return (h + (m || 0) / 60).toFixed(2);
+      };
+
       return apiRequest("POST", "/api/chalans", {
         customerId: parseInt(data.customerId),
         projectId: data.projectId ? parseInt(data.projectId) : null,
@@ -282,8 +290,8 @@ export default function ChalanPage() {
         toTime: data.toTime,
         actualFromTime: data.actualFromTime || null,
         actualToTime: data.actualToTime || null,
-        breakHours: data.breakHours || "0",
-        totalHours: data.totalHours || "0",
+        breakHours: hhmmToDecimal(data.breakHours),
+        totalHours: hhmmToDecimal(data.totalHours),
       });
     },
     onSuccess: () => {
@@ -321,6 +329,14 @@ export default function ChalanPage() {
       });
       const totalAmount = items.reduce((sum, item) => sum + parseFloat(item.amount), 0);
 
+      // Convert HH:mm to decimal for database numeric type
+      const hhmmToDecimal = (val: string | undefined | null) => {
+        if (!val) return "0";
+        if (!val.includes(":")) return val;
+        const [h, m] = val.split(":").map(Number);
+        return (h + (m || 0) / 60).toFixed(2);
+      };
+
       return apiRequest("PATCH", `/api/chalans/${data.id}`, {
         customerId: parseInt(data.customerId),
         projectId: data.projectId ? parseInt(data.projectId) : null,
@@ -334,8 +350,8 @@ export default function ChalanPage() {
         toTime: data.toTime,
         actualFromTime: data.actualFromTime || null,
         actualToTime: data.actualToTime || null,
-        breakHours: data.breakHours || "0",
-        totalHours: data.totalHours || "0",
+        breakHours: hhmmToDecimal(data.breakHours),
+        totalHours: hhmmToDecimal(data.totalHours),
       });
     },
     onSuccess: () => {
