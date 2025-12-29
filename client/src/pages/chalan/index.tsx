@@ -784,7 +784,7 @@ export default function ChalanPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {projects.filter((p) => p.isActive && p.customerId === parseInt(selectedCustomerId || "0")).map((project) => (
+                          {projects.map((project) => (
                             <SelectItem key={project.id} value={project.id.toString()}>
                               {project.name}
                             </SelectItem>
