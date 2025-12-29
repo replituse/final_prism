@@ -224,7 +224,10 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
       queryClient.invalidateQueries({ predicate: (query) => 
         typeof query.queryKey[0] === 'string' && query.queryKey[0].startsWith('/api/bookings')
       });
-      toast({ title: "Booking created successfully" });
+      toast({ 
+        title: "Booking created successfully",
+        className: "bg-green-500 text-white border-none"
+      });
       onOpenChange(false);
       form.reset();
     },
@@ -261,7 +264,10 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
       queryClient.invalidateQueries({ predicate: (query) => 
         typeof query.queryKey[0] === 'string' && query.queryKey[0].startsWith('/api/bookings')
       });
-      toast({ title: "Booking updated successfully" });
+      toast({ 
+        title: "Booking updated successfully",
+        className: "bg-green-500 text-white border-none"
+      });
       onOpenChange(false);
     },
     onError: (error: any) => {
