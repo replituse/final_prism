@@ -168,6 +168,7 @@ export const chalans = pgTable("chalans", {
   breakHours: numeric("break_hours").default("0"),
   totalHours: numeric("total_hours").default("0"),
   notes: text("notes"),
+  termsAndConditions: text("terms_and_conditions"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

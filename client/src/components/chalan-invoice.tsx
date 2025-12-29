@@ -182,6 +182,13 @@ export function ChalanInvoice({ chalan, onClose, showActions = true, viewOnly = 
               </div>
             )}
 
+            {chalan.termsAndConditions && (
+              <div className="mb-4 p-3 bg-muted/50 rounded-md">
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Terms & Conditions</p>
+                <p className="text-xs whitespace-pre-wrap">{chalan.termsAndConditions}</p>
+              </div>
+            )}
+
             {chalan.isCancelled && chalan.cancelReason && (
               <div className="mb-4 p-3 bg-destructive/10 border border-destructive/30 rounded-md">
                 <p className="text-[10px] font-semibold text-destructive uppercase tracking-wide mb-1">Cancellation Reason</p>

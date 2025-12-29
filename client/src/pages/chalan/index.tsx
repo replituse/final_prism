@@ -63,6 +63,7 @@ const chalanFormSchema = z.object({
   projectId: z.string().optional().nullable().or(z.literal("")),
   chalanDate: z.string().min(1, "Date is required"),
   notes: z.string().optional(),
+  termsAndConditions: z.string().optional(),
   items: z.array(chalanItemSchema).min(1, "At least one item is required"),
   bookingId: z.string().optional(),
   editorId: z.string().optional(),
@@ -133,6 +134,7 @@ export default function ChalanPage() {
       projectId: "",
       chalanDate: format(new Date(), "yyyy-MM-dd"),
       notes: "",
+      termsAndConditions: "",
       items: [{ description: "", quantity: "1", rate: "0" }],
       editorId: "",
       roomId: "",
@@ -281,6 +283,7 @@ export default function ChalanPage() {
         projectId: data.projectId ? parseInt(data.projectId) : null,
         chalanDate: data.chalanDate,
         notes: data.notes,
+        termsAndConditions: data.termsAndConditions || null,
         totalAmount: totalAmount.toString(),
         items,
         bookingId: selectedBookingId ? parseInt(selectedBookingId) : undefined,
@@ -342,6 +345,7 @@ export default function ChalanPage() {
         projectId: data.projectId ? parseInt(data.projectId) : null,
         chalanDate: data.chalanDate,
         notes: data.notes,
+        termsAndConditions: data.termsAndConditions || null,
         totalAmount: totalAmount.toString(),
         items,
         editorId: data.editorId ? parseInt(data.editorId) : undefined,
@@ -437,6 +441,7 @@ export default function ChalanPage() {
       projectId: "",
       chalanDate: format(new Date(), "yyyy-MM-dd"),
       notes: "",
+      termsAndConditions: "",
       items: [{ description: "", quantity: "1", rate: "0" }],
       editorId: "",
       roomId: "",
@@ -525,6 +530,7 @@ export default function ChalanPage() {
         projectId: chalan.projectId?.toString() || "",
         chalanDate: chalan.chalanDate,
         notes: chalan.notes || "",
+        termsAndConditions: chalan.termsAndConditions || "",
         editorId: chalan.editorId?.toString() || "",
         roomId: chalan.roomId?.toString() || "",
         fromTime: chalan.fromTime || "",
@@ -1032,6 +1038,20 @@ export default function ChalanPage() {
                     <FormLabel>Notes</FormLabel>
                     <FormControl>
                       <Textarea data-testid="input-notes" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="termsAndConditions"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Terms & Conditions</FormLabel>
+                    <FormControl>
+                      <Textarea data-testid="input-terms-conditions" {...field} placeholder="Add terms and conditions..." />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
