@@ -702,11 +702,21 @@ export default function CustomersPage() {
                             <FormControl>
                               <Checkbox
                                 checked={field.value}
-                                onCheckedChange={field.onChange}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    const contacts = form.getValues("contacts") || [];
+                                    contacts.forEach((_, i) => {
+                                      if (i !== index) {
+                                        form.setValue(`contacts.${i}.isPrimary`, false);
+                                      }
+                                    });
+                                  }
+                                  field.onChange(checked);
+                                }}
                                 data-testid={`checkbox-contact-primary-${index}`}
                               />
                             </FormControl>
-                            <FormLabel className="!mt-0">Primary Contact</FormLabel>
+                            <FormLabel className="!mt-0 text-sm font-normal cursor-pointer">Primary Contact</FormLabel>
                           </FormItem>
                         )}
                       />
