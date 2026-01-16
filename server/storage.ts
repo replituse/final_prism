@@ -644,7 +644,14 @@ export class DatabaseStorage implements IStorage {
         changeLogs.push(`Editor: ${editor?.name || booking.editorId}`);
       }
     }
-    if (booking.notes !== undefined && (booking.notes || "") !== (existing.notes || "")) changeLogs.push(`Notes: ${booking.notes || "None"}`);
+    
+    // Check for notes changes explicitly
+    const newNotes = booking.notes !== undefined ? (booking.notes || "") : (existing.notes || "");
+    const oldNotes = existing.notes || "";
+    if (booking.notes !== undefined && newNotes !== oldNotes) {
+      changeLogs.push(`Notes: ${booking.notes || "None"}`);
+    }
+    
     if (booking.actualFromTime !== undefined && booking.actualFromTime !== existing.actualFromTime) changeLogs.push(`Actual Start: ${booking.actualFromTime?.slice(0, 5) || "None"}`);
     if (booking.actualToTime !== undefined && booking.actualToTime !== existing.actualToTime) changeLogs.push(`Actual End: ${booking.actualToTime?.slice(0, 5) || "None"}`);
     if (booking.breakHours !== undefined && booking.breakHours !== existing.breakHours) changeLogs.push(`Break: ${booking.breakHours}h`);

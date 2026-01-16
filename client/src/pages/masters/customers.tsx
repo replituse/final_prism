@@ -570,7 +570,7 @@ export default function CustomersPage() {
                       </Button>
                     </CardHeader>
                     <CardContent className="p-4 pt-0 space-y-3">
-                      <div className="grid grid-cols-2 gap-3 items-start">
+                      <div className="grid grid-cols-2 gap-3 items-end">
                         <FormField
                           control={form.control}
                           name={`contacts.${index}.name`}
@@ -600,7 +600,7 @@ export default function CustomersPage() {
                                       variant="outline"
                                       role="combobox"
                                       className={cn(
-                                        "w-full h-9 justify-between font-normal",
+                                        "w-full justify-between font-normal h-9",
                                         !field.value && "text-muted-foreground"
                                       )}
                                       data-testid={`select-contact-designation-${index}`}
