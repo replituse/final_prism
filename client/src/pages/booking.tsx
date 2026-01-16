@@ -603,11 +603,11 @@ function BookingContent() {
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-medium">{log.action}</span>
                       <span className="text-xs text-muted-foreground font-mono">
-                        {format(new Date(log.createdAt), "PPp")}
+                        {format(new Date(log.createdAt), "MMM d, yyyy, h:mm a")}
                       </span>
                     </div>
                     {log.changes && (
-                      <p className="text-muted-foreground text-xs">{log.changes}</p>
+                      <p className="text-muted-foreground text-xs leading-relaxed">{log.changes}</p>
                     )}
                   </div>
                 ))

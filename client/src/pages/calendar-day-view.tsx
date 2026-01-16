@@ -707,29 +707,29 @@ export default function CalendarDayView() {
       </Dialog>
 
       <Dialog open={logsDialogOpen} onOpenChange={setLogsDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Booking Logs</DialogTitle>
             <DialogDescription>
               History of changes for this booking.
             </DialogDescription>
           </DialogHeader>
-          <ScrollArea className="max-h-[400px]">
-            <div className="space-y-3">
+          <ScrollArea className="max-h-[500px]">
+            <div className="space-y-3 mt-4">
               {Array.isArray(bookingLogs) && bookingLogs.length > 0 ? (
                 bookingLogs.map((log: any) => (
                   <div
                     key={log.id}
-                    className="p-3 rounded-md bg-muted/50 text-sm"
+                    className="p-4 rounded-lg border bg-muted/30 text-sm"
                   >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-medium">{log.action}</span>
+                    <div className="flex items-center justify-between mb-2">
+                      <Badge variant="outline">{log.action}</Badge>
                       <span className="text-xs text-muted-foreground font-mono">
-                        {format(new Date(log.createdAt), "PPp")}
+                        {format(new Date(log.createdAt), "MMM d, yyyy, h:mm a")}
                       </span>
                     </div>
                     {log.changes && (
-                      <p className="text-muted-foreground text-xs">{log.changes}</p>
+                      <p className="text-muted-foreground leading-relaxed">{log.changes}</p>
                     )}
                   </div>
                 ))
