@@ -628,11 +628,26 @@ export class DatabaseStorage implements IStorage {
     
     // Track changes
     const changeLogs: string[] = [];
-    if (booking.roomId && booking.roomId !== existing.roomId) changeLogs.push(`Room changed`);
-    if (booking.bookingDate && booking.bookingDate !== existing.bookingDate) changeLogs.push(`Date changed to ${booking.bookingDate}`);
-    if (booking.fromTime && booking.fromTime !== existing.fromTime) changeLogs.push(`Start time: ${booking.fromTime}`);
-    if (booking.toTime && booking.toTime !== existing.toTime) changeLogs.push(`End time: ${booking.toTime}`);
+    if (booking.roomId && booking.roomId !== existing.roomId) {
+      const [room] = await db.select().from(rooms).where(eq(rooms.id, booking.roomId));
+      changeLogs.push(`Room: ${room?.name || booking.roomId}`);
+    }
+    if (booking.bookingDate && booking.bookingDate !== existing.bookingDate) changeLogs.push(`Date: ${booking.bookingDate}`);
+    if (booking.fromTime && booking.fromTime !== existing.fromTime) changeLogs.push(`Start time: ${booking.fromTime.slice(0, 5)}`);
+    if (booking.toTime && booking.toTime !== existing.toTime) changeLogs.push(`End time: ${booking.toTime.slice(0, 5)}`);
     if (booking.status && booking.status !== existing.status) changeLogs.push(`Status: ${booking.status}`);
+    if (booking.editorId !== undefined && booking.editorId !== existing.editorId) {
+      if (booking.editorId === null) {
+        changeLogs.push(`Editor: Removed`);
+      } else {
+        const [editor] = await db.select().from(editors).where(eq(editors.id, booking.editorId));
+        changeLogs.push(`Editor: ${editor?.name || booking.editorId}`);
+      }
+    }
+    if (booking.notes !== undefined && booking.notes !== existing.notes) changeLogs.push(`Notes updated`);
+    if (booking.actualFromTime !== undefined && booking.actualFromTime !== existing.actualFromTime) changeLogs.push(`Actual Start: ${booking.actualFromTime?.slice(0, 5) || "None"}`);
+    if (booking.actualToTime !== undefined && booking.actualToTime !== existing.actualToTime) changeLogs.push(`Actual End: ${booking.actualToTime?.slice(0, 5) || "None"}`);
+    if (booking.breakHours !== undefined && booking.breakHours !== existing.breakHours) changeLogs.push(`Break: ${booking.breakHours}h`);
     
     // Calculate billing hours if any time-related fields are being updated
     let totalHours: number | undefined;
