@@ -556,18 +556,16 @@ export default function CustomersPage() {
 
                 {fields.map((field, index) => (
                   <Card key={field.id} className="relative">
-                    {index > 0 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        onClick={() => remove(index)}
-                        data-testid={`button-remove-contact-${index}`}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    )}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      onClick={() => remove(index)}
+                      data-testid={`button-remove-contact-${index}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
                     <CardContent className="pt-4 space-y-3">
                       <div className="grid grid-cols-2 gap-3">
                         <FormField
